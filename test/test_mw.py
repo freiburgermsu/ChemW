@@ -10,13 +10,11 @@ def test_inits():
     # import the class modules
     chem_mw = chemw.ChemMW()
     phreeq_db = chemw.PHREEQdb()
-    phreeq_db.process(r'..\examples\PHREEQ\databases\pitzer.dat')
+    phreeq_db.process('pitzer.dat')
     
     # assert qualities of the modules
     assert type(phreeq_db.db_name) is str
     assert type(phreeq_db.db) is DataFrame
-    for zero in [chem_mw.groups, chem_mw.layer, chem_mw.skip_characters]:
-        assert zero == 0
     
     for TF in [chem_mw.verbose, chem_mw.final, chem_mw.end, phreeq_db.verbose]:
         assert type(TF) is bool
@@ -44,14 +42,20 @@ def test_accuracy():
         'Ca1.019Na.136K.006Al2.18Si6.82O18:7.33H2O': 714.4
     }
     
-    # calculate the MW for the dictionary of chemicals    
+    # affirm that iterated entities are zero
     chem_mw = chemw.ChemMW()
+    for zero in [chem_mw.groups, chem_mw.layer, chem_mw.skip_characters]:
+        assert zero == 0
+        
+    # calculate the MW for the dictionary of chemicals    
     for chemical in test_chemicals:
         chem_mw.mass(chemical)
         if (round(chem_mw.mw, 4) == test_chemicals[chemical]) or (test_chemicals[chemical]-amu_tolerance < chem_mw.mw < test_chemicals[chemical]+amu_tolerance):
             assert True
         else:
             assert False
+            
+    
             
             
 def test_phreeq_db():

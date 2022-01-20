@@ -10,18 +10,20 @@ The `ChemMW` object of ``ChemW`` parses a chemical formula string -- which consi
 
 The `PHREEQdb` object of ``ChemW`` parses a `PHREEQ database <https://www.usgs.gov/software/phreeqc-version-3>`_ via the `ChemMW` object. The object exports a JSON file that consolidate the elements and minerals, and importantly mineral masses, of the database. This unique application of the `ChemMW` object has been applied as the pivotal means of predicting the mass of mineral scaling in the `ROSSpy module <https://pypi.org/project/ROSSpy/>`_ for reverse osmosis research.
 
-The ``ChemW`` module is offered with the `MIT License <https://opensource.org/licenses/MIT>`_\.
-
-Usage
-++++++
+The ``ChemW`` module is offered with the `MIT License <https://opensource.org/licenses/MIT>`_\. Examples of the module are available in the examples directory of the `ChemW GitHub repository <https://github.com/freiburgermsu/ChemW>`_. Please submit errors or inaccuracies as `GitHub issues <https://github.com/freiburgermsu/ChemW/issues>`_ so that they may be resolved.
 
 +++++++++++++
 installation
 +++++++++++++
 
-The following command are executed in a command prompt/terminal environment::
+The following command installs ``ChemW`` in a command prompt/terminal environment::
  
- pip install hillfit
+ pip install chemw
+
+_________________
+
+ChemMW
+++++++++++++++++++
 
 +++++++++++
 __init__
@@ -31,59 +33,79 @@ The data environment, in a `Python IDE <https://www.simplilearn.com/tutorials/py
 
 .. code-block:: python
 
- import hillfit
- hf = hillfit.HillFit(x_data, y_data)
+ import chemw
+ chem_mw = chemw.ChemMW(verbose = False, printing = True)
 
-- *x_data* & *y_data* ``list`` or ``ndarray``: specifies the x-values & y-values, respectively, of the raw data that will be fitted with the Hill equation.
+- *verbose* & *printing* ``bool``: specifies whether troubleshooting information or MW results will be printed, respectively.
 
 ++++++++++++++++
-fitting()
+mass()
 ++++++++++++++++
 
 The parameterized data is fitted to the Hill equation, with the following arguments and their default values:
 
 .. code-block:: python
 
- hf.fitting(x_label = 'x', y_label = 'y', title = 'Fitted Hill equation', sigfigs = 6, view_figure = True)
+ chem_mw.mass(formula)
 
-- *x_label* & *y_label* ``str``: specifies the x-axis & y-axis labels, respectively, that will be applied to the regression plot for the raw data points and the fitted Hill equation.
-- *title* ``str``: specifies the title of the regression plot for the raw data points and the fitted Hill equation.
-- *sigfigs* ``int``: specifies the number of `significant figures <https://en.wikipedia.org/wiki/Significant_figures>`_ that will be used in printed instances of the fitted Hill equation.
-- *view_figure* ``bool``: specifies whether the regression plot will be printed in the Python environment.
+- *formula* ``str``: parameterizes the chemical formula for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following formulae:
 
------------------------------
+===================================================  ===================================================================================
+ Example chemical                                      Format example
+===================================================  ===================================================================================
+ ``C60_H120_O2``                                       Underscores can arbitrarily separate content, since these are ignored by ``ChemMW``.
+``'Na2.43_Cl_(OH)2_(OH)1.2_(OH)'``                      An arbitrary number of groups can be distinguished in the chemical formula, 
+                                                            with ``()`` denoting the boundaries of the specified group.
+  ``'Na2.43Cl(Ca(OH)2)1.2'``                             Chemical groups can be nested, with differing stoichiometric values.
+ ``'Na2.43Cl:2H2O'``                                     Water molecules can be complexed, 
+                                                               with a leading stoichiometric quantity of the complexation.
+``'Na.96Al.96Si2.04O6:H2O'``                            Stoichiometry can be any decimal for any atom in a molecule, 
+                                                                and even omit a leading zero.
+``'Na2SO4:3K2SO4'``                                              Non-water entities can be complexed.
+``'CaCl2:(MgCl2)2:12H2O'``                              Multiple complexations can be applied with repeated ``:`` separators. 
+ ``'Ca1.019Na.136K.006Al2.18Si6.82O18:7.33H2O'``       The complexity, while remaining within the aforementioned format, is arbitrary.
+===================================================  ===================================================================================
+
+
+++++++++++++++++++++++++++
 Accessible content
------------------------------
-Many data sets and exported components of the fitted information are accessible through the ``hillfit`` model object. 
+++++++++++++++++++++++++++
+The ``ChemMW`` object retains numerous components that are accessible to the user: 
 
-- *top*, *bottom*, *ec50*, & *nH* ``float``: The fitted parameters of the Hill equation are accessible via ``hf.top``, ``hf.bottom``, ``hf.ec50``, & ``hf.nH``, respectively.
-- *fitted_xs* & *fitted_ys* ``list``: The x- and y-values of the fitted Hill equation are accessible via ``hf.x_fit`` & ``hf.y_fit``, respectively.
-- *fitted_equation* ``str``: The fitted Hill equation, in an amenable string format for the `eval() built-in Python function <https://pythongeeks.org/python-eval-function/>`_ that allows the user to directly execute the string as a function for an "x" variable, is accessible via ``hf.equation``.
-- *figure* ``matplotlib.figure``: The regression figure is available via ``hf.figure``.
-- *x_data* & *y_data* ``ndarray``: The arrays of original data are available via ``hf.x_data`` & ``hf.y_data``, respectively.
+- *mw* ``float``: The MW of the parameterized chemical formula.
+- *formula* ``str``: The original chemical formula as a string.
+- *groups* ``int``: A numerical counter for the quantity of chemical groups that are 
+- *group_masses* ``dict``: A dictionary for the masses of each nesting level in a molecule.
+
+
+_________________
+
+PHREEQdb
+++++++++++++++++++
 
 
 ++++++++++
-export()
+__init__
 ++++++++++
 
-The fitted Hill equation, with its data points and parameters, and the regression information are exported to a designated folder through the following syntax and arguments:
+The data environment, in a `Python IDE <https://www.simplilearn.com/tutorials/python-tutorial/python-ide>`_, is defined: 
 
 .. code-block:: python
 
- hf.export(export_path = None, export_name = None)
+ import chemw
+ phreeq_db = chemw.PHREEQdb(output_path = None, verbose = False, printing = False)
 
-- *export_path* ``str``: optionally specifies a path to where the content will be exported, where `None` selects the current working directory.
-- *export_name* ``str``: optionally specifies a name for the folder of exported content, where `None` enables the code to design a unique folder name for the information.
+- *output_path* ``str``: optionally specifies an path to where the processed PHREEQ database file will be exported, where `None` selects the current working directory.
+- *verbose* & *printing* ``bool``: optionally specifies whether progress or results of the calculations, respectively, are printed. The former is valuable for troubleshooting while the latter is beneficial for reviewing a readout summary of the calculations.
 
-Execution
-+++++++++++
+++++++++++
+process()
+++++++++++
 
-Hillfit is executed through the following sequence of the aforementioned functions, which is exemplified in the `example Notebook of our GitHub repository <https://github.com/freiburgermsu/hillfit/tree/master/examples>`_:
+A PHREEQ database file is processed into a JSON file of the elements and minerals, with their respective formula and MW: 
 
 .. code-block:: python
- 
- import hillfit
- hf = hillfit.HillFit(x_data, y_data)
- hf.fitting(x_label = 'test_x', y_label = 'test_y', title = 'Fitted Hill equation', sigfigs = 6, view_figure = True)
- hf.export(export_path = None, export_name = None)
+
+ phreeq_db.process(db_path)
+
+- *db_path* ``str``: The path to where the ``.dat`` PHREEQ database file that will be processed.

@@ -153,7 +153,6 @@ class ChemMW():
         self.verbose = verbose
         self.printing = printing
         self.final = self.end = False
-        self.groups = self.layer = self.skip_characters = 0
 
     def _parse_stoich(self,formula, ch_number):
         ch_no = ch_number  # ch_number is the first digit of the stoich float
@@ -399,7 +398,9 @@ class ChemMW():
             return 0, 0
 
         elif re.search('[0-9]', formula[ch_number]):
-            skips, stoich = self._parse_stoich(formula, ch_number)
+            self._final(formula,ch_number)            
+            if not self.end:
+                skips, stoich = self._parse_stoich(formula, ch_number)
             if self.verbose:
                 print('skip_characters_mineral_formula', skips)
             return skips, stoich
@@ -411,6 +412,7 @@ class ChemMW():
         
 
     def mass(self, formula):
+        self.groups = self.layer = self.skip_characters = 0
         skip_characters = self.mw = 0 
         self.formula = formula
         formula = re.sub('[_]', '', formula)
