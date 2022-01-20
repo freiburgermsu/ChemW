@@ -8,7 +8,7 @@ setup(
   name = 'ChemW',      
   package_dir = {'mw':'chemw'},
   packages = find_packages(),
-  version = '0.0.11',
+  version = '0.0.12',
   license = 'MIT',
   description = "Calculate the Molecular Weight from an arbitrary chemical formula as a string, and process PHREEQC databases into programmable JSON files.", 
   long_description = readme,
