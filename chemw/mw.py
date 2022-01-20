@@ -149,8 +149,7 @@ class PHREEQdb():
         
         
 class ChemMW():
-    def __init__(self, database = False, verbose = False, printing = True):
-        self.database = database
+    def __init__(self, verbose = False, printing = True):
         self.verbose = verbose
         self.printing = printing
         self.final = self.end = False
