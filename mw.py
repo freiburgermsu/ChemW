@@ -129,22 +129,25 @@ class phreeq_db():
         
         
 class ChemMW():
-    def __init__(self, database = False):
+    def __init__(self, database = False, verbose = False):
         self.database = database
+        self.verbose = verbose
         self.final = False
         self.groups = self.layer = self.skip_characters = 0
 
     def _parse_stoich(self,formula, ch_number):
         ch_no = ch_number  # ch_number is the first digit of the stoich float
         stoich = ''
-        print('first ch', formula[ch_no])
+        if self.verbose:
+            print('first ch', formula[ch_no])
         if formula[ch_no] == '.':
             stoich = '0.'
         if self.final:
             stoich = 1
         else:
             while re.search('[0-9\.]', formula[ch_no]): 
-                print('later ch', formula[ch_no])
+                if self.verbose:
+                    print('later ch', formula[ch_no])
                 stoich += formula[ch_no]
                 if ch_no == len(formula)-1:
                     self.final = True
@@ -152,24 +155,37 @@ class ChemMW():
                 ch_no += 1
 
         skips = ch_no - ch_number
+        if self.verbose:
+            print('stoich',stoich)
         stoich = float(stoich)
         if re.search('(\.0$)', str(stoich)):
             stoich = int(stoich)
         return skips, stoich
 
     def _group_parsing(self,formula, ch_number):
+        self.group_masses = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0
+        }
         self.layer += 1
         self.groups += 1
-        group_masses = {}
         ch_no2 = ch_number+1
-        skip_characters = final_mass2 = group_masses[self.layer] = 0
-        print('\nGroup parsing')
+        skip_characters = final_mass = 0
+        if self.verbose:
+            print('\nGroup parsing')
         while self.layer > 0:
             ch = formula[ch_no2]
-            print('\nch_no2', ch_no2)
-            print('ch_2', ch)
+            if self.verbose:
+                print('\nch_no2', ch_no2)
+                print('ch_2', ch)
+                print(f'Layer {self.layer} mass: {self.group_masses[self.layer]}')
             if skip_characters > 0:
-                print('skipping_group', skip_characters)
+                if self.verbose:
+                    print('skipping_group', skip_characters)
                 skip_characters -= 1
                 ch_no2 += 1
                 continue
@@ -183,44 +199,65 @@ class ChemMW():
                 
                 # parse the new sub mineral
                 skips, mass = self._parse_mineral_formula(formula, ch_no2)
-                group_masses[self.layer] = mass
+                self.group_masses[self.layer] += mass
                 skip_characters += skips
-                print('skips', skips)
-                print('skip_characters_group', skip_characters)
+                if self.verbose:
+                    print('here1')
+                    print('skips', skips)
+                    print('skip_characters_group', skip_characters)
+                ch_no2 += 1
             elif ch == ')':
+                if self.verbose:
+                    print(formula[ch_no2])
                 ch_no2 += 1
                 stoich = 1
                 if not self.final:
                     skips, stoich = self._parse_stoich(formula, ch_no2)
-                    print('skips', skips)
+                    if self.verbose:
+                        print('skips', skips)
                     skip_characters += skips 
-                group_masses[self.layer] *= stoich
-                print('skip_characters_group', skip_characters)
+                if not self.final:
+                    self.group_masses[self.layer] *= stoich
+                if self.verbose:
+                    print('here2')
+                    print('skip_characters_group', skip_characters)
                 self.layer -= 1
             else:
                 # set_trace()
                 skips, mass = self._parse_mineral_formula(formula, ch_no2)
-                group_masses[self.layer] += mass
-                print('skips', skips)
+                self.group_masses[self.layer] += mass
                 skip_characters += skips
-                print('skip_characters_group', skip_characters)
+                if self.verbose:
+                    print('here3')
+                    print('skips', skips)
+                    print('skip_characters_group', skip_characters)
                 ch_no2 += 1
                
     
 #                 print(f'--> ERROR: The final character of {formula} is {formula[-1]}') 
-        stoich = 1
+        
+        # calculate the final mass of the nested group
+        for group in self.group_masses:
+            if self.verbose:
+                print(f'component {group} mass', self.group_masses[group])
+            final_mass += self.group_masses[group]
         if not self.final:
             if not re.search('[A-Z:\(]', formula[ch_no2+1]):
                 skips, stoich = self._parse_stoich(formula, ch_no2)
-
-        # calculate the total mass for nested groups 
-        final_mass = 0
-        for group in group_masses:
-            final_mass += group_masses[group]
-        skip_characters = ch_no2 - ch_number + skip_characters-1
-        print('skip_characters_group', skip_characters)
+            else:
+                stoich = 1
+                
+        if self.verbose:
+            print('stoich', stoich)
+            print('final_mass', final_mass)
+        if self.group_masses[2] > 0:
+            final_mass *= stoich
         
-        print('\nEnd Group\n')
+        # calculate the total mass for nested groups 
+        skip_characters = ch_no2 - ch_number + skip_characters-1
+        if self.verbose:
+            print('skip_characters_group', skip_characters)
+            print('\nEnd Group\n')
         return skip_characters, final_mass
 
     def _parse_mineral_formula(self,formula, ch_number):
@@ -229,16 +266,17 @@ class ChemMW():
         if re.search('[ +)]',formula[ch_number]):
             skip_characters = 0
             mass = 0
-            print('skip_characters_mineral_formula', skip_characters)
+            if self.verbose:
+                print('skip_characters_mineral_formula1', skip_characters)
             return skip_characters, mass
         elif re.search('[A-Z]',formula[ch_number]):
             if self.final:
                 element = formula[ch_number]
                 stoich = 1
                 mass = stoich * elemental_masses[element] 
-                skip_characters = 0
-                print('skip_characters_mineral_formula', skip_characters)
-                return skip_characters, mass
+                if self.verbose:
+                    print('skip_characters_mineral_formula2', 0)
+                return 0, mass
 
             elif re.search('[a-z]', formula[ch_number+1]):
                 element = formula[ch_number] + formula[ch_number+1]          
@@ -260,7 +298,8 @@ class ChemMW():
 
                 mass = stoich * elemental_masses[element] 
                 skip_characters = skips + 1
-                print('skip_characters_mineral_formula', skip_characters)
+                if self.verbose:
+                    print('skip_characters_mineral_formula3', skip_characters)
 
                 return skip_characters, mass
 
@@ -270,7 +309,8 @@ class ChemMW():
                 element = formula[ch_number]
                 mass = stoich * elemental_masses[element] 
                 skip_characters = skips
-                print('skip_characters_mineral_formula', skip_characters)
+                if self.verbose:
+                    print('skip_characters_mineral_formula4', skip_characters)
                 return skip_characters, mass
 
             elif formula[ch_number+1] == '.':
@@ -279,22 +319,24 @@ class ChemMW():
                 element = formula[ch_number]
                 mass = stoich * elemental_masses[element] 
                 skip_characters = skips+1
-                print('skip_characters_mineral_formula', skip_characters)
+                if self.verbose:
+                    print('skip_characters_mineral_formula5', skip_characters)
                 return skip_characters, mass
 
             elif re.search('[A-Z():+ ]', formula[ch_number+1]):
                 element = formula[ch_number]
                 stoich = 1
                 mass = stoich * elemental_masses[element] 
-                skip_characters = 0
-                print('skip_characters_mineral_formula', skip_characters)
-                return skip_characters, mass
+                if self.verbose:
+                    print('here4', stoich, elemental_masses[element])
+                    print('skip_characters_mineral_formula6', 0)
+                return 0, mass
 
 
         elif re.search(':',formula[ch_number]):
             skips = stoich = space = back_space = 0
             if re.search('[0-9]', formula[ch_number+1]):
-                skips, stoich = parse_stoich(formula, ch_number+1)
+                skips, stoich = self._parse_stoich(formula, ch_number+1)
             if re.search('[( ]',formula[ch_number+1+skips]):
                 space = 1
                 back_space = 1
@@ -302,22 +344,26 @@ class ChemMW():
                 skip_characters = len('H2O')+skips+back_space
                 water_mass = elemental_masses['H'] * 2 + elemental_masses['O']
                 mass = float(stoich) * water_mass
-                print('skip_characters_mineral_formula', skip_characters)
+                if self.verbose:
+                    print('skip_characters_mineral_formula7', skip_characters)
                 return skip_characters, mass
             elif formula[ch_number+1+skips+space:ch_number+4+skips+space] == 'H\+':
                 skip_characters = len('H+')+skips
                 proton_mass = elemental_masses['H']
                 mass = float(stoich) * proton_mass
-                print('skip_characters_mineral_formula', skip_characters)
+                if self.verbose:
+                    print('skip_characters_mineral_formula8', skip_characters)
                 return skip_characters, mass
             elif re.search('[A-Z]',formula[ch_number+skips+1]):
                 skip_characers, mass = group_parsing(formula, ch_number+skips, final)
                 group_mass = mass * stoich
+                if self.verbose:
+                    print('skip_characters_mineral_formula9', skip_characters)
                 return skip_characers, group_mass
-                print('skip_characters_mineral_formula', skip_characters)
             else:
-                print(f'--> ERROR: The {formula} formula is not predictable.')
-                print('skip_characters_mineral_formula', skip_characters)
+                if self.verbose:
+                    print(f'--> ERROR: The {formula} formula is not predictable.')
+                    print('skip_characters_mineral_formula10', skip_characters)
                 return 0, 0
 
         elif formula[ch_number-1] == '.':
@@ -325,21 +371,25 @@ class ChemMW():
 
         elif re.search('[0-9]', formula[ch_number]):
             skips, stoich = self._parse_stoich(formula, ch_number)
-            print('skip_characters_mineral_formula', skips)
+            if self.verbose:
+                print('skip_characters_mineral_formula', skips)
             return skips, stoich
 
 
     def mass(self, formula):
         skip_characters = self.mineral_mass = 0 
-
+        formula = re.sub('[_]', '', formula)
+        self.final = False
         for ch_number in range(len(formula)):
             ch = formula[ch_number]
-            print('\ntotal_mass', mineral_mass)
-            print('ch_number', ch_number)
-            print('ch', ch)
+            if self.verbose:
+                print('\ntotal_mass', self.mineral_mass)
+                print('ch_number', ch_number)
+                print('ch', ch)
             if self.skip_characters > 0:
                 self.skip_characters -= 1
-                print('skip_characters', self.skip_characters)
+                if self.verbose:
+                    print('skip_characters', self.skip_characters)
                 continue
 
             if ch_number == len(formula)-1:
@@ -383,8 +433,8 @@ class ChemMW():
 
 #         if mineral in ['Hydroxyapatite']:
 #             minerals[mineral]['mass'] += elemental_masses['O']
-
-        print('\n{} mass: {}'.format(formula, self.mineral_mass))
+        if self.verbose:
+            print('\n{} mass: {}'.format(formula, self.mineral_mass))
 
             
             
