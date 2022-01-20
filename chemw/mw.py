@@ -21,27 +21,21 @@ for element in periodic_table:
     elemental_masses[element.symbol] = element.MW
     
 class PHREEQdb():
-    def __init__(self, db_path, output_path = None, verbose = False):
-        self.db_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db_path).group()
-        self.db = pandas.read_table(db_path, sep='\n')
+    def __init__(self, output_path = None, verbose = False, printing = False):
+        self.chem_mw = ChemMW(verbose = verbose, printing = printing)
         self.verbose = verbose
         
         # define the output path
         if output_path is None:
             count = 0
-            self.output = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
-            while os.path.exists(self.output):
+            self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
+            while os.path.exists(self.output_path):
                 count += 1
-                self.output = os.path.join(os.getcwd(), f'PHREEQdb-{count}')            
+                self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')            
         else:
-            self.output = output_path
-            if not os.path.exists(self.output):
-                os.mkdir(self.output)
-        
-        # parse the database for elements and minerals
-        self.chem_mw = ChemMW(verbose = self.verbose)
-        self._database_parsing()
-        self._database_json_creation()
+            self.output_path = output_path
+        if not os.path.exists(self.output_path):
+            os.mkdir(self.output_path)
         
 
     def _database_parsing(self,):
@@ -124,14 +118,18 @@ class PHREEQdb():
             print(self.minerals)
         
         
-    def _database_json_creation(self,):
-        database_json = {'elements': {}, 'minerals': {}}
+    def process(self,db_path):
+        # load the database
+        self.db_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db_path).group()
+        self.db = pandas.read_table(db_path, sep='\n')
+        self._database_parsing()
 
-        # create the elements JSON
+        # add elements to the JSON
+        database_json = {'elements': {}, 'minerals': {}}
         for index, element in self.elements.iterrows():
             database_json['elements'][element['elements']] = {'charge_specie': element['alk'], 'gfw_formula':element['gfw_formula'], 'element_gfw':element['element_gfw']}
 
-        # create the minerals JSON
+        # add minerals to the JSON
         for index, mineral in self.minerals.iterrows():
             phase = mineral['phases']
             formula = mineral['formula']
@@ -146,14 +144,15 @@ class PHREEQdb():
             database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
 
         # export the JSON files
-        with open(os.path.join(self.output, f'{self.db_name}.json'), 'w') as output:
+        with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
             json.dump(database_json, output, indent = 4)
         
         
 class ChemMW():
-    def __init__(self, database = False, verbose = False):
+    def __init__(self, database = False, verbose = False, printing = True):
         self.database = database
         self.verbose = verbose
+        self.printing = printing
         self.final = self.end = False
         self.groups = self.layer = self.skip_characters = 0
 
@@ -376,7 +375,8 @@ class ChemMW():
             if re.search('[0-9]', formula[ch_number+1]):
                 skips, stoich = self._parse_stoich(formula, ch_number+1)
                 
-                print('\npost-: value', formula[ch_number+skips+1])
+                if self.verbose:
+                    print('\npost-: value', formula[ch_number+skips+1])
                 skip_characters, mass = self._group_parsing(formula, ch_number+skips)
                 skip_characters += skips
                 group_mass = mass * stoich
@@ -412,9 +412,11 @@ class ChemMW():
         
 
     def mass(self, formula):
-        skip_characters = self.mineral_mass = 0 
+        skip_characters = self.mw = 0 
+        self.formula = formula
         formula = re.sub('[_]', '', formula)
-        print('\n\n\n', formula, '\n', '='*2*len(formula))
+        if self.verbose:
+            print('\n\n\n', formula, '\n', '='*2*len(formula))
         self.final = False
         for ch_number in range(len(formula)):
             ch = formula[ch_number]
@@ -429,7 +431,7 @@ class ChemMW():
                     print('skipping_mass', ch)
                 continue
             if self.verbose:
-                print('\ntotal_mass', self.mineral_mass)
+                print('\ntotal_mass', self.mw)
                 print('ch_number', ch_number)
                 print('ch', ch)
 
@@ -438,15 +440,15 @@ class ChemMW():
                 
             if formula[ch_number] == '(':
                 self.skip_characters, mass = self._group_parsing(formula, ch_number)
-                self.mineral_mass += mass 
+                self.mw += mass 
             else:
                 self.skip_characters, mass = self._element_parsing(formula, ch_number)
-                self.mineral_mass += mass
+                self.mw += mass
 
-        if self.verbose:
-            print('\n{} mass: {}'.format(formula, self.mineral_mass))
+        if self.printing:
+            print('\n{} mass: {}'.format(formula, self.mw))
             
         # reset the class object values
         self._reset()
         
-        return self.mineral_mass
+        return self.mw

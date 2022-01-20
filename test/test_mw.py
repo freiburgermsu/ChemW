@@ -1,6 +1,7 @@
 from sigfig import round
 from pandas import DataFrame
-import chemw, re, os
+import chemw
+import re, os
 from glob import glob
 from shutil import rmtree
 
@@ -8,7 +9,8 @@ from shutil import rmtree
 def test_inits():
     # import the class modules
     chem_mw = chemw.ChemMW()
-    phreeq_db = chemw.PHREEQdb(r'..\examples\databases\pitzer.dat')
+    phreeq_db = chemw.PHREEQdb()
+    phreeq_db.process(r'..\examples\PHREEQ\databases\pitzer.dat')
     
     # assert qualities of the modules
     assert type(phreeq_db.db_name) is str
@@ -18,6 +20,13 @@ def test_inits():
     
     for TF in [chem_mw.verbose, chem_mw.final, chem_mw.end, phreeq_db.verbose]:
         assert type(TF) is bool
+        
+    # verify the output folder and its contents 
+    output_file = os.path.join(phreeq_db.output_path, phreeq_db.db_name+'.json')
+    assert os.path.exists(output_file)
+   
+    # delete the directory 
+    rmtree(phreeq_db.output_path)
     
 
 def test_accuracy():
@@ -36,10 +45,10 @@ def test_accuracy():
     }
     
     # calculate the MW for the dictionary of chemicals    
-    mw = chemw.ChemMW(verbose = False)
+    chem_mw = chemw.ChemMW()
     for chemical in test_chemicals:
-        mw.mass(chemical)
-        if (round(mw.mineral_mass, 4) == test_chemicals[chemical]) or (test_chemicals[chemical]-amu_tolerance < mw.mineral_mass < test_chemicals[chemical]+amu_tolerance):
+        chem_mw.mass(chemical)
+        if (round(chem_mw.mw, 4) == test_chemicals[chemical]) or (test_chemicals[chemical]-amu_tolerance < chem_mw.mw < test_chemicals[chemical]+amu_tolerance):
             assert True
         else:
             assert False
@@ -47,15 +56,17 @@ def test_accuracy():
             
 def test_phreeq_db():
     # process the PHREEQ databases 
-    phreeq_databases = [db for db in glob(r'..\examples\databases\*.dat')]
+    phreeq_databases = [db for db in glob(r'..\examples\PHREEQ\databases\*.dat')]
+    # output_path = os.path.join(os.path.dirname(__file__), 'PHREEQqb')
+    phreeq_db = chemw.PHREEQdb()
     for db in phreeq_databases:
         print('\n\n\n', re.search('([A-Za-z0-9_\.]+(?=\.dat))',db).group(), 'database\n', '='*len(db))
-        chemw.PHREEQdb(db)
+        phreeq_db.process(db)
         
-    # verify the output folder and its contents
-    export_path = os.path.join(os.getcwd(), f'PHREEQdb-0') 
+    # verify the output folder and its contents 
     for db in phreeq_databases:
-        assert os.path.exists(os.path.join(export_path, re.search('([A-Za-z0-9_\.]+(?=\.dat))', db).group()+'.json'))
+        json_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db).group()+'.json'
+        assert os.path.exists(os.path.join(phreeq_db.output_path, json_name))
    
     # delete the directory 
-    rmtree(export_path)
+    rmtree(phreeq_db.output_path)
