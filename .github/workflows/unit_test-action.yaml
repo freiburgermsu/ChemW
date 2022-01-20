@@ -23,4 +23,4 @@ jobs:
           pip install chemw
           pip show chemw
       - name: Run tests
-        run: python -m pytest \test\test_mw.py
+        run: python -m pytest test\test_mw.py
