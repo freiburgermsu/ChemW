@@ -31,6 +31,7 @@ MANIFEST
 
 # organization content
 images/
+deprecated/
 
 # Sphinx documentation
 docs/_build/

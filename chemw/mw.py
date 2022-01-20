@@ -1,10 +1,7 @@
 from chemicals import periodic_table
 from glob import glob
-from numpy import nan
-from pdb import set_trace
 import pandas
-import json
-import re
+import json, re, os
 
 
 def isnumber(num):
@@ -23,11 +20,23 @@ elemental_masses = {}
 for element in periodic_table:
     elemental_masses[element.symbol] = element.MW
     
-class phreeq_db():
-    def __init__(self, db_path, verbose = False):
+class PHREEQdb():
+    def __init__(self, db_path, output_path = None, verbose = False):
         self.db_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db_path).group()
         self.db = pandas.read_table(db_path, sep='\n')
         self.verbose = verbose
+        
+        # define the output path
+        if output_path is None:
+            count = 0
+            self.output = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
+            while os.path.exists(self.output):
+                count += 1
+                self.output = os.path.join(os.getcwd(), f'PHREEQdb-{count}')            
+        else:
+            self.output = output_path
+            if not os.path.exists(self.output):
+                os.mkdir(self.output)
         
         # parse the database for elements and minerals
         self.chem_mw = ChemMW(verbose = self.verbose)
@@ -137,16 +146,15 @@ class phreeq_db():
             database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
 
         # export the JSON files
-        with open(f'{self.db_name}.json', 'w') as output:
+        with open(os.path.join(self.output, f'{self.db_name}.json'), 'w') as output:
             json.dump(database_json, output, indent = 4)
         
         
 class ChemMW():
-    def __init__(self, database = False, verbose = False, phreeq_db = False):
+    def __init__(self, database = False, verbose = False):
         self.database = database
         self.verbose = verbose
         self.final = self.end = False
-        self.phreeq_db = phreeq_db
         self.groups = self.layer = self.skip_characters = 0
 
     def _parse_stoich(self,formula, ch_number):
@@ -430,13 +438,9 @@ class ChemMW():
                 
             if formula[ch_number] == '(':
                 self.skip_characters, mass = self._group_parsing(formula, ch_number)
-                if self.phreeq_db:
-                    self._phreeqc_exceptions()
                 self.mineral_mass += mass 
             else:
                 self.skip_characters, mass = self._element_parsing(formula, ch_number)
-                if self.phreeq_db:
-                    self._phreeqc_exceptions()
                 self.mineral_mass += mass
 
         if self.verbose:

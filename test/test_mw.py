@@ -1,12 +1,14 @@
 from sigfig import round
 from pandas import DataFrame
-import mw, re, os
+import chemw, re, os
+from glob import glob
+from shutil import rmtree
 
 
 def test_inits():
     # import the class modules
-    chem_mw = mw.ChemMW()
-    phreeq_db = mw.PHREEQdb()
+    chem_mw = chemw.ChemMW()
+    phreeq_db = chemw.PHREEQdb(r'..\examples\databases\pitzer.dat')
     
     # assert qualities of the modules
     assert type(phreeq_db.db_name) is str
@@ -34,7 +36,7 @@ def test_accuracy():
     }
     
     # calculate the MW for the dictionary of chemicals    
-    mw = ChemMW(verbose = False)
+    mw = chemw.ChemMW(verbose = False)
     for chemical in test_chemicals:
         mw.mass(chemical)
         if (round(mw.mineral_mass, 4) == test_chemicals[chemical]) or (test_chemicals[chemical]-amu_tolerance < mw.mineral_mass < test_chemicals[chemical]+amu_tolerance):
@@ -48,7 +50,7 @@ def test_phreeq_db():
     phreeq_databases = [db for db in glob(r'..\examples\databases\*.dat')]
     for db in phreeq_databases:
         print('\n\n\n', re.search('([A-Za-z0-9_\.]+(?=\.dat))',db).group(), 'database\n', '='*len(db))
-        PHREEQdb(db)
+        chemw.PHREEQdb(db)
         
     # verify the output folder and its contents
     export_path = os.path.join(os.getcwd(), f'PHREEQdb-0') 
