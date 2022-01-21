@@ -11,22 +11,9 @@ def test_inits():
     chem_mw = chemw.ChemMW()
     phreeq_db = chemw.PHREEQdb()
     print(os.getcwd())
-    phreeq_db.process('./databases/pitzer.dat')
-    
-    # assert qualities of the modules
-    assert type(phreeq_db.db_name) is str
-    assert type(phreeq_db.db) is DataFrame
-    
     for TF in [chem_mw.verbose, chem_mw.final, chem_mw.end, phreeq_db.verbose]:
         assert type(TF) is bool
         
-    # verify the output folder and its contents 
-    output_file = os.path.join(phreeq_db.output_path, phreeq_db.db_name+'.json')
-    assert os.path.exists(output_file)
-   
-    # delete the directory 
-    rmtree(phreeq_db.output_path)
-    
 
 def test_accuracy():
     # calculate the MW for chemicals of known MW 
@@ -59,7 +46,7 @@ def test_accuracy():
             
 def test_phreeq_db():
     # process the PHREEQ databases 
-    phreeq_databases = [db for db in glob('.databases/*.dat')]
+    phreeq_databases = [db for db in glob('databases/*.dat')]
     # output_path = os.path.join(os.path.dirname(__file__), 'PHREEQqb')
     phreeq_db = chemw.PHREEQdb()
     for db in phreeq_databases:
@@ -70,6 +57,8 @@ def test_phreeq_db():
     for db in phreeq_databases:
         json_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db).group()+'.json'
         assert os.path.exists(os.path.join(phreeq_db.output_path, json_name))
+        assert type(phreeq_db.db_name) is str
+        assert type(phreeq_db.db) is DataFrame
    
     # delete the directory 
     rmtree(phreeq_db.output_path)
