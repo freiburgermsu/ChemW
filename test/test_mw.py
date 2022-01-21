@@ -10,7 +10,8 @@ def test_inits():
     # import the class modules
     chem_mw = chemw.ChemMW()
     phreeq_db = chemw.PHREEQdb()
-    phreeq_db.process('pitzer.dat')
+    print(os.getcwd())
+    phreeq_db.process('./databases/pitzer.dat')
     
     # assert qualities of the modules
     assert type(phreeq_db.db_name) is str
@@ -42,12 +43,8 @@ def test_accuracy():
         'Ca1.019Na.136K.006Al2.18Si6.82O18:7.33H2O': 714.4
     }
     
-    # affirm that iterated entities are zero
-    chem_mw = chemw.ChemMW()
-    for zero in [chem_mw.groups, chem_mw.layer, chem_mw.skip_characters]:
-        assert zero == 0
-        
     # calculate the MW for the dictionary of chemicals    
+    chem_mw = chemw.ChemMW()
     for chemical in test_chemicals:
         chem_mw.mass(chemical)
         if (round(chem_mw.mw, 4) == test_chemicals[chemical]) or (test_chemicals[chemical]-amu_tolerance < chem_mw.mw < test_chemicals[chemical]+amu_tolerance):
@@ -55,12 +52,14 @@ def test_accuracy():
         else:
             assert False
             
-    
+    # affirm that iterated entities are zero
+    for zero in [chem_mw.groups, chem_mw.layer, chem_mw.skip_characters]:
+        assert zero == 0
             
             
 def test_phreeq_db():
     # process the PHREEQ databases 
-    phreeq_databases = [db for db in glob(r'..\examples\PHREEQ\databases\*.dat')]
+    phreeq_databases = [db for db in glob('.databases/*.dat')]
     # output_path = os.path.join(os.path.dirname(__file__), 'PHREEQqb')
     phreeq_db = chemw.PHREEQdb()
     for db in phreeq_databases:

@@ -109,3 +109,13 @@ A PHREEQ database file is processed into a JSON file of the elements and mineral
  phreeq_db.process(db_path)
 
 - *db_path* ``str``: The path to where the ``.dat`` PHREEQ database file that will be processed.
+
+
+++++++++++++++++++++++++++
+Accessible content
+++++++++++++++++++++++++++
+The ``PHREEQdb`` object retains numerous components that are accessible to the user: 
+
+- *db_name* ``str``: The name of the database that is parsed in the ``process()`` function.
+- *db*, *minerals*, & *elements* ``Pandas.DataFrame``: The entire PHREEQ database and the minerals and elements of the PHREEQ database, respectively, expressed in a Pandas Database object, and organized with labeled columns of the content. 
+- *chem_mw* ``ChemMW``: An instance of the ``ChemMW`` object is loaded, which allows the user to access the ``ChemMW`` module through the ``PHREEQdb`` module.

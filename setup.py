@@ -9,9 +9,9 @@ setup(
   package_dir = {'mw':'chemw'},
   packages = find_packages(),
   package_data = {
-	'test':['pitzer.dat'],
+	'test':['databases/*'],
   },
-  version = '0.0.13',
+  version = '0.0.14',
   license = 'MIT',
   description = "Calculate the Molecular Weight from an arbitrary chemical formula as a string, and process PHREEQC databases into programmable JSON files.", 
   long_description = readme,
