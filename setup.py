@@ -4,6 +4,9 @@ from setuptools import setup, find_packages
 with open('README.rst') as file:
     readme = file.read()
 
+with open('LICENSE') as file:
+    license = file.read()
+
 setup(
   name = 'ChemW',      
   package_dir = {'mw':'chemw'},
@@ -11,8 +14,8 @@ setup(
   package_data = {
 	'test':['databases/*'],
   },
-  version = '0.0.15',
-  license = 'MIT',
+  version = '0.1.0',
+  license = license,
   description = "Calculate the Molecular Weight from an arbitrary chemical formula as a string, and processes PHREEQC databases into programmable JSON files.", 
   long_description = readme,
   author = 'Andrew Freiburger',               

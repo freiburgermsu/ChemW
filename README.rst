@@ -1,5 +1,5 @@
 Calculating the Molecular Weight of a Chemical
---------------------------------------------------
+____________________________________________________________________
 
 |PyPI version| |Actions Status| |Downloads| |License|
 
