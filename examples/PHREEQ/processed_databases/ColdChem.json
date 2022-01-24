@@ -92,7 +92,7 @@
         },
         "Thenardite": {
             "formula": "Na2SO4",
-            "mass": 146.04214
+            "mass": 142.04214
         },
         "Mirabilite": {
             "formula": "Na2SO4:10H2O",
@@ -100,7 +100,7 @@
         },
         "Arcanite": {
             "formula": "K2SO4",
-            "mass": 178.2592
+            "mass": 174.2592
         },
         "Kieserite": {
             "formula": "MgSO4:H2O",
@@ -128,7 +128,7 @@
         },
         "Anhydrite": {
             "formula": "CaSO4",
-            "mass": 140.1406
+            "mass": 136.1406
         },
         "Bassanite": {
             "formula": "CaSO4:0.5H2O",
@@ -148,7 +148,7 @@
         },
         "Glauberite": {
             "formula": "Na2SO4:CaSO4",
-            "mass": 282.18273999999997
+            "mass": 278.18273999999997
         },
         "Labile_Salt": {
             "formula": "Na4(SO4)2:CaSO4:2H2O",

@@ -124,11 +124,11 @@
     "minerals": {
         "Akermanite": {
             "formula": "Ca2MgSi2O7",
-            "mass": 279.6278
+            "mass": 272.6278
         },
         "Anhydrite": {
             "formula": "CaSO4",
-            "mass": 140.1406
+            "mass": 136.1406
         },
         "Anthophyllite": {
             "formula": "Mg7Si8O22(OH)2",
@@ -136,15 +136,15 @@
         },
         "Antigorite": {
             "formula": "Mg48Si34O85(OH)62",
-            "mass": 3500.50334
+            "mass": 3498.50334
         },
         "Aragonite": {
             "formula": "CaCO3",
-            "mass": 103.0869
+            "mass": 100.0869
         },
         "Arcanite": {
             "formula": "K2SO4",
-            "mass": 178.2592
+            "mass": 174.2592
         },
         "Artinite": {
             "formula": "Mg2CO3(OH)2:3H2O",
@@ -152,7 +152,7 @@
         },
         "Barite": {
             "formula": "BaSO4",
-            "mass": 237.3896
+            "mass": 233.3896
         },
         "Bischofite": {
             "formula": "MgCl2:6H2O",
@@ -172,7 +172,7 @@
         },
         "Calcite": {
             "formula": "CaCO3",
-            "mass": 103.0869
+            "mass": 100.0869
         },
         "Carnallite": {
             "formula": "KMgCl3:6H2O",
@@ -180,11 +180,11 @@
         },
         "Celestite": {
             "formula": "SrSO4",
-            "mass": 187.6826
+            "mass": 183.6826
         },
         "Chalcedony": {
             "formula": "SiO2",
-            "mass": 62.0843
+            "mass": 60.0843
         },
         "Chrysotile": {
             "formula": "Mg3Si2O5(OH)4",
@@ -192,7 +192,7 @@
         },
         "Diopside": {
             "formula": "CaMgSi2O6",
-            "mass": 222.5504
+            "mass": 216.5504
         },
         "Dolomite": {
             "formula": "CaMg(CO3)2",
@@ -200,7 +200,7 @@
         },
         "Enstatite": {
             "formula": "MgSiO3",
-            "mass": 103.3887
+            "mass": 100.3887
         },
         "Epsomite": {
             "formula": "MgSO4:7H2O",
@@ -208,7 +208,7 @@
         },
         "Forsterite": {
             "formula": "Mg2SiO4",
-            "mass": 144.6931
+            "mass": 140.6931
         },
         "Gaylussite": {
             "formula": "CaNa2(CO3)2:5H2O",
@@ -248,7 +248,7 @@
         },
         "Kalicinite": {
             "formula": "KHCO3",
-            "mass": 103.11514
+            "mass": 100.11514
         },
         "Kieserite": {
             "formula": "MgSO4:H2O",
@@ -268,7 +268,7 @@
         },
         "Magnesite": {
             "formula": "MgCO3",
-            "mass": 87.31389999999999
+            "mass": 84.31389999999999
         },
         "MgCl2_2H2O": {
             "formula": "MgCl2:2H2O",
@@ -288,7 +288,7 @@
         },
         "Nahcolite": {
             "formula": "NaHCO3",
-            "mass": 87.00661
+            "mass": 84.00661
         },
         "Natron": {
             "formula": "Na2CO3:10H2O",
@@ -316,7 +316,7 @@
         },
         "Quartz": {
             "formula": "SiO2",
-            "mass": 62.0843
+            "mass": 60.0843
         },
         "Schoenite": {
             "formula": "K2Mg(SO4)2:6H2O",
@@ -340,7 +340,7 @@
         },
         "Thenardite": {
             "formula": "Na2SO4",
-            "mass": 146.04214
+            "mass": 142.04214
         },
         "Trona": {
             "formula": "Na3H(CO3)2:2H2O",

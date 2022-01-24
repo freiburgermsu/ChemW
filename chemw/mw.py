@@ -131,15 +131,15 @@ class PHREEQdb():
 
         # add minerals to the JSON
         for index, mineral in self.minerals.iterrows():
-            phase = mineral['phases']
-            formula = mineral['formula']
-            formula = re.sub('Cyanide|Cyanate', 'CN', formula)
-            database_json['minerals'][phase] = {}
-                        
-            if re.search('PHASES', mineral['phases']):
+            phase = mineral['phases']                     
+            if re.search('phases|phase', phase, flags = re.IGNORECASE):
                 continue
-            
+                        
             # calculate the chemical masses for each mineral 
+            formula = mineral['formula']
+            formula = re.sub('Cyanide|Cyanate', 'CN', formula)   
+            
+            database_json['minerals'][phase] = {}
             database_json['minerals'][phase]['formula'] = formula
             database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
 
@@ -311,6 +311,12 @@ class ChemMW():
                 element = formula[ch_number]
                 stoich = 1
                 mass = stoich * elemental_masses[element] 
+                
+                # track the elemental proportion
+                if element not in self.element_masses:
+                    self.element_masses[element] = mass
+                else:
+                    self.element_masses[element] += mass
                 if self.verbose:
                     print('skip_characters_mineral_formula2', 0)
                 return 0, mass
@@ -334,6 +340,13 @@ class ChemMW():
                     stoich = 1
 
                 mass = stoich * elemental_masses[element] 
+                
+                # track the elemental proportion
+                if element not in self.element_masses:
+                    self.element_masses[element] = mass
+                else:
+                    self.element_masses[element] += mass
+
                 skip_characters = skips + 1
                 if self.verbose:
                     print('skip_characters_mineral_formula3', skip_characters)
@@ -345,6 +358,13 @@ class ChemMW():
 
                 element = formula[ch_number]
                 mass = stoich * elemental_masses[element] 
+                
+                # track the elemental proportion
+                if element not in self.element_masses:
+                    self.element_masses[element] = mass
+                else:
+                    self.element_masses[element] += mass
+
                 if self.verbose:
                     print('skip_characters_mineral_formula4', skips)
                 return skips, mass
@@ -354,6 +374,13 @@ class ChemMW():
 
                 element = formula[ch_number]
                 mass = stoich * elemental_masses[element] 
+                
+                # track the elemental proportion
+                if element not in self.element_masses:
+                    self.element_masses[element] = mass
+                else:
+                    self.element_masses[element] += mass
+
                 skip_characters = skips
                 if self.verbose:
                     print('skip_characters_mineral_formula5', skip_characters)
@@ -362,6 +389,13 @@ class ChemMW():
             elif re.search('[A-Z():+ ]', formula[ch_number+1]):
                 element = formula[ch_number]
                 mass = elemental_masses[element] 
+                
+                # track the elemental proportion
+                if element not in self.element_masses:
+                    self.element_masses[element] = mass
+                else:
+                    self.element_masses[element] += mass
+
                 if self.verbose:
                     print('here4', stoich, elemental_masses[element])
                     print('skip_characters_mineral_formula6', 0)
@@ -416,6 +450,7 @@ class ChemMW():
         skip_characters = self.mw = 0 
         self.formula = formula
         formula = re.sub('[_]', '', formula)
+        self.element_masses = {}
         if self.verbose:
             print('\n\n\n', formula, '\n', '='*2*len(formula))
         self.final = False
@@ -447,7 +482,13 @@ class ChemMW():
                 self.mw += mass
 
         if self.printing:
-            print('\n{} mass: {}'.format(formula, self.mw))
+            print('\n{} --- MW (amu): {}'.format(formula, self.mw))
+            
+        # normalize the elemental proportions
+        self.proportions = {}
+        total_mass = sum([self.element_masses[element] for element in self.element_masses])
+        for element in self.element_masses:
+            self.proportions[element] = self.element_masses[element]/total_mass
             
         # reset the class object values
         self._reset()

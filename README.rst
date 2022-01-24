@@ -1,8 +1,24 @@
 Calculating the Molecular Weight of a Chemical
 --------------------------------------------------
 
-Background
-+++++++++++
+|PyPI version| |Actions Status| |Downloads| |License|
+
+.. |PyPI version| image:: https://img.shields.io/pypi/v/chemw.svg?logo=PyPI&logoColor=brightgreen
+   :target: https://pypi.org/project/chemw/
+   :alt: PyPI version
+
+.. |Actions Status| image:: https://github.com/freiburgermsu/chemw/workflows/Test%20ChemW/badge.svg
+   :target: https://github.com/freiburgermsu/chemw/actions
+   :alt: Actions Status
+
+.. |License| image:: https://img.shields.io/badge/License-MIT-blue.svg
+   :target: https://opensource.org/licenses/MIT
+   :alt: License
+
+.. |Downloads| image:: https://pepy.tech/badge/chemw
+   :target: https://pepy.tech/project/chemw
+   :alt: Downloads
+
 
 The molecular weight (MW) can be algebraically calculated from any chemical formula that adheres to `chemical conventions <https://en.wikipedia.org/wiki/Chemical_formula>`_. 
 
@@ -51,9 +67,9 @@ The parameterized data is fitted to the Hill equation, with the following argume
 - *formula* ``str``: parameterizes the chemical formula for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following formulae:
 
 ===================================================  ===================================================================================
- Example chemical                                      Format example
+ Example chemical                                      Format option
 ===================================================  ===================================================================================
- ``C60_H120_O2``                                       Underscores can arbitrarily separate content, since these are ignored by ``ChemMW``.
+ ``'C60_H120_O2'``                                       Underscores can arbitrarily separate content, since these are ignored by ``ChemMW``.
 ``'Na2.43_Cl_(OH)2_(OH)1.2_(OH)'``                      An arbitrary number of groups can be distinguished in the chemical formula, 
                                                             with ``()`` denoting the boundaries of the specified group.
   ``'Na2.43Cl(Ca(OH)2)1.2'``                             Chemical groups can be nested, with differing stoichiometric values.
@@ -73,6 +89,7 @@ Accessible content
 The ``ChemMW`` object retains numerous components that are accessible to the user: 
 
 - *mw* ``float``: The MW of the parameterized chemical formula.
+- *proportions* ``dict``: The ratio of elements in the chemical formula. This loses accuracy with the grouped elements, and is being improved.
 - *formula* ``str``: The original chemical formula as a string.
 - *groups* ``int``: A numerical counter for the quantity of chemical groups that are 
 - *group_masses* ``dict``: A dictionary for the masses of each nesting level in a molecule.

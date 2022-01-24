@@ -234,11 +234,11 @@
     "minerals": {
         "Calcite": {
             "formula": "CaCO3",
-            "mass": 103.0869
+            "mass": 100.0869
         },
         "Aragonite": {
             "formula": "CaCO3",
-            "mass": 103.0869
+            "mass": 100.0869
         },
         "Dolomite": {
             "formula": "CaMg(CO3)2",
@@ -246,19 +246,19 @@
         },
         "Siderite": {
             "formula": "FeCO3",
-            "mass": 118.8539
+            "mass": 115.8539
         },
         "Rhodochrosite": {
             "formula": "MnCO3",
-            "mass": 117.94694899999999
+            "mass": 114.94694899999999
         },
         "Strontianite": {
             "formula": "SrCO3",
-            "mass": 150.6289
+            "mass": 147.6289
         },
         "Witherite": {
             "formula": "BaCO3",
-            "mass": 200.33589999999998
+            "mass": 197.33589999999998
         },
         "Gypsum": {
             "formula": "CaSO4:2H2O",
@@ -266,15 +266,15 @@
         },
         "Anhydrite": {
             "formula": "CaSO4",
-            "mass": 140.1406
+            "mass": 136.1406
         },
         "Celestite": {
             "formula": "SrSO4",
-            "mass": 187.6826
+            "mass": 183.6826
         },
         "Barite": {
             "formula": "BaSO4",
-            "mass": 237.3896
+            "mass": 233.3896
         },
         "Hydroxyapatite": {
             "formula": "Ca5(PO4)3OH",
@@ -282,15 +282,15 @@
         },
         "Fluorite": {
             "formula": "CaF2",
-            "mass": 80.0748064
+            "mass": 78.0748064
         },
         "Chalcedony": {
             "formula": "SiO2",
-            "mass": 62.0843
+            "mass": 60.0843
         },
         "Quartz": {
             "formula": "SiO2",
-            "mass": 62.0843
+            "mass": 60.0843
         },
         "Gibbsite": {
             "formula": "Al(OH)3",
@@ -302,11 +302,11 @@
         },
         "Albite": {
             "formula": "NaAlSi3O8",
-            "mass": 270.223008
+            "mass": 262.223008
         },
         "Anorthite": {
             "formula": "CaAl2Si2O8",
-            "mass": 286.207276
+            "mass": 278.207276
         },
         "Talc": {
             "formula": "Mg3Si4O10(OH)2",
@@ -326,7 +326,7 @@
         },
         "Hematite": {
             "formula": "Fe2O3",
-            "mass": 162.6882
+            "mass": 159.6882
         },
         "Goethite": {
             "formula": "FeOOH",
@@ -334,7 +334,7 @@
         },
         "Pyrite": {
             "formula": "FeS2",
-            "mass": 121.975
+            "mass": 119.975
         },
         "Mackinawite": {
             "formula": "FeS",
@@ -350,7 +350,7 @@
         },
         "Hausmannite": {
             "formula": "Mn3O4",
-            "mass": 232.811747
+            "mass": 228.811747
         },
         "Manganite": {
             "formula": "MnOOH",
@@ -378,7 +378,7 @@
         },
         "Smithsonite": {
             "formula": "ZnCO3",
-            "mass": 128.38889999999998
+            "mass": 125.38889999999999
         },
         "Sphalerite": {
             "formula": "ZnS",
@@ -386,27 +386,27 @@
         },
         "Willemite": {
             "formula": "Zn2SiO4",
-            "mass": 226.8431
+            "mass": 222.8431
         },
         "Otavite": {
             "formula": "CdCO3",
-            "mass": 175.41989999999998
+            "mass": 172.41989999999998
         },
         "CdSiO3": {
             "formula": "CdSiO3",
-            "mass": 191.4947
+            "mass": 188.4947
         },
         "CdSO4": {
             "formula": "CdSO4",
-            "mass": 212.4736
+            "mass": 208.4736
         },
         "Cerussite": {
             "formula": "PbCO3",
-            "mass": 270.20889999999997
+            "mass": 267.20889999999997
         },
         "Anglesite": {
             "formula": "PbSO4",
-            "mass": 307.26259999999996
+            "mass": 303.26259999999996
         }
     }
 }
