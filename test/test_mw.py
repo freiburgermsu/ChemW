@@ -14,10 +14,11 @@ def test_inits():
     for TF in [chem_mw.verbose, chem_mw.final, chem_mw.end, phreeq_db.verbose]:
         assert type(TF) is bool
         
+    rmtree(phreeq_db.output_path)
+        
 
 def test_accuracy():
     # calculate the MW for chemicals of known MW 
-    amu_tolerance = 1
     test_chemicals = {
         'Na2.43_Cl_(OH)2_(OH)1.2_(OH)': 162.7,
         'Na2.43Cl(Ca(OH)2)1.2':180.2,
@@ -34,7 +35,8 @@ def test_accuracy():
     chem_mw = chemw.ChemMW()
     for chemical in test_chemicals:
         chem_mw.mass(chemical)
-        if (round(chem_mw.mw, 4) == test_chemicals[chemical]) or (test_chemicals[chemical]-amu_tolerance < chem_mw.mw < test_chemicals[chemical]+amu_tolerance):
+        tolerance = chem_mw.mw*0.001 # 99.9% accuracy
+        if not isclose(chem_mw.mw, test_chemicals[chemical], rel_tol = tolerance):
             assert True
         else:
             assert False
