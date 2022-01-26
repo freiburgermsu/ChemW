@@ -1,5 +1,5 @@
-Calculating the Molecular Weight of a Chemical
-____________________________________________________________________
+Calculating the Molecular Weight of a Chemical Formula
+--------------------------------------------------------------------------------------------------------
 
 |PyPI version| |Actions Status| |Downloads| |License|
 
@@ -22,14 +22,14 @@ ____________________________________________________________________
 
 The molecular weight (MW) can be algebraically calculated from any chemical formula that adheres to `chemical conventions <https://en.wikipedia.org/wiki/Chemical_formula>`_, which is exemplified in subsequent examples. 
 
-The `ChemMW` object of ``ChemW`` parses a chemical formula string -- which consists of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula, based upon the current physical accuracy that is embedded in the ``periodic_table`` dictionary of the ``chemicals`` module.
+The ``ChemMW`` object of ``ChemW`` parses a chemical formula string -- which consists of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula, based upon the current physical accuracy that is embedded in the ``periodic_table`` dictionary of the ``chemicals`` module.
 
-The `PHREEQdb` object of ``ChemW`` parses a `PHREEQ database <https://www.usgs.gov/software/phreeqc-version-3>`_ via the `ChemMW` object and exports a JSON of mineral masses for all of the described minerals in the database. This unique application of the `ChemMW` object has been applied as the pivotal means of predicting the mass of mineral scaling in the `ROSSpy module <https://pypi.org/project/ROSSpy/>`_ for reverse osmosis research.
+The ``PHREEQdb`` object of ``ChemW`` parses a `PHREEQ database <https://www.usgs.gov/software/phreeqc-version-3>`_ via the ``ChemMW`` object and exports a JSON of mineral masses for all of the described minerals in the database. This unique application of the `ChemMW` object has been applied as the pivotal means of predicting the mass of mineral scaling in the `ROSSpy module <https://pypi.org/project/ROSSpy/>`_ for reverse osmosis research.
 
 The ``ChemW`` module is offered with the `MIT License <https://opensource.org/licenses/MIT>`_\. Examples of the module are available in the examples directory of the `ChemW GitHub repository <https://github.com/freiburgermsu/ChemW>`_. Please submit errors or inaccuracies as `GitHub issues <https://github.com/freiburgermsu/ChemW/issues>`_ so that they may be resolved.
 
-+++++++++++++
-installation
+
+Installation
 +++++++++++++
 
 The following command installs ``ChemW`` in a command prompt/terminal environment::
@@ -49,8 +49,8 @@ The data environment, in a `Python IDE <https://www.simplilearn.com/tutorials/py
 
 .. code-block:: python
 
- import chemw
- chem_mw = chemw.ChemMW(verbose = False, printing = True)
+  import chemw
+  chem_mw = chemw.ChemMW(verbose = False, printing = True)
 
 - *verbose* & *printing* ``bool``: specifies whether troubleshooting information or MW results will be printed, respectively.
 
