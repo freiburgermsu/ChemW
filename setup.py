@@ -14,13 +14,13 @@ setup(
   package_data = {
 	'test':['databases/*'],
   },
-  version = '0.1.0',
+  version = '0.1.1',
   license = license,
-  description = "Calculate the Molecular Weight from an arbitrary chemical formula as a string, and processes PHREEQC databases into programmable JSON files.", 
+  description = "Calculates the Molecular Weight from a string of an arbitrary chemical formula.", 
   long_description = readme,
   author = 'Andrew Freiburger',               
   author_email = 'andrewfreiburger@gmail.com',
   url = 'https://github.com/freiburgermsu/chemw',   
-  keywords = ['chemistry', 'math', 'mass', 'weight', 'PHREEQC', 'molecular', 'mineral', 'formula'],
+  keywords = ['chemistry', 'math', 'mass', 'weight', 'PHREEQC', 'molecular', 'mineral', 'formula', 'calculate'],
   install_requires = ['chemicals', 'pandas']
 )
