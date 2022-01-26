@@ -1,3 +1,4 @@
+from math import isclose
 from sigfig import round
 from pandas import DataFrame
 import chemw
