@@ -38,9 +38,9 @@ def test_accuracy():
         chem_mw.mass(chemical)
         tolerance = chem_mw.mw*0.001 # 99.9% accuracy
         if not isclose(chem_mw.mw, test_chemicals[chemical], rel_tol = tolerance):
-            assert True
-        else:
             assert False
+        else:
+            assert True
             
     # affirm that iterated entities are zero
     for zero in [chem_mw.groups, chem_mw.layer, chem_mw.skip_characters]:
