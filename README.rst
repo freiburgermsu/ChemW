@@ -22,7 +22,7 @@ Calculating the Molecular Weight of a Chemical Formula
 
 The molecular weight (MW) can be algebraically calculated from any chemical formula that adheres to `chemical conventions <https://en.wikipedia.org/wiki/Chemical_formula>`_, which is exemplified in subsequent examples. 
 
-The ``ChemMW`` object of ``ChemW`` parses a chemical formula string -- which consists of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula, based upon the current physical accuracy that is embedded in the ``periodic_table`` dictionary of the ``chemicals`` module.
+The ``ChemMW`` object of ``ChemW`` parses a chemical formula string -- which can consist of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula. The significant digits of the reported MW matches the lowest significant digits from the set of elements that constitute the chemical formula, where the used elemental masses are the most precise contemporary measurements of pure elements, per the `chemicals module <https://pypi.org/project/chemicals/>`_.
 
 The ``PHREEQdb`` object of ``ChemW`` parses a `PHREEQ database <https://www.usgs.gov/software/phreeqc-version-3>`_ via the ``ChemMW`` object and exports a JSON of mineral masses for all of the described minerals in the database. This unique application of the `ChemMW` object has been applied as the pivotal means of predicting the mass of mineral scaling in the `ROSSpy module <https://pypi.org/project/ROSSpy/>`_ for reverse osmosis research.
 
@@ -88,7 +88,7 @@ Accessible content
 ++++++++++++++++++++++++++
 The ``ChemMW`` object retains numerous components that are accessible to the user: 
 
-- *mw* ``float``: The MW of the parameterized chemical formula.
+- *mw* & *raw_mw* ``float``: The MW of the parameterized chemical formula with and without the proper significant digits, respectively.
 - *proportions* ``dict``: The ratio of elements in the chemical formula. This loses accuracy with the grouped elements, and is being improved.
 - *formula* ``str``: The original chemical formula as a string.
 - *groups* ``int``: A numerical counter for the quantity of chemical groups that are 

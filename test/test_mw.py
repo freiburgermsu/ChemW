@@ -1,10 +1,9 @@
-from math import isclose
-from sigfig import round
 from pandas import DataFrame
+from shutil import rmtree
+from math import isclose
+from glob import glob
 import chemw
 import re, os
-from glob import glob
-from shutil import rmtree
 
 
 def test_inits():
@@ -37,7 +36,7 @@ def test_accuracy():
     for chemical in test_chemicals:
         chem_mw.mass(chemical)
         tolerance = chem_mw.mw*0.001 # 99.9% accuracy
-        if not isclose(chem_mw.mw, test_chemicals[chemical], rel_tol = tolerance):
+        if not isclose(chem_mw.raw_mw, test_chemicals[chemical], rel_tol = tolerance):
             assert False
         else:
             assert True

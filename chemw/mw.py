@@ -1,4 +1,5 @@
 from chemicals import periodic_table
+from math import inf
 from glob import glob
 import pandas
 import json, re, os
@@ -80,18 +81,19 @@ class PHREEQdb():
                 mineral_parsing = True
 
         # define the elements content for the database
+        self.minerals = pandas.DataFrame(minerals_rows)
+        self.minerals.columns = self.minerals.iloc[0]
+        self.minerals = self.minerals.drop(0)
+        
         self.elements = pandas.DataFrame(elements_rows)
         self.elements.fillna(' ')
-    #     elements.columns = elements.iloc[0]
         self.elements.drop([0], inplace = True)
         for column in self.elements:
             nan_entries = 0
             alphanumeric_entries = 0
             for entry in self.elements[column]:
-    #             if entry in [None, ' ', nan]:
                 if entry is not None:
-                    if re.search('[a-z]|[0-9]', entry, re.IGNORECASE) and entry is not None:
-        #             if entry is str or entry is float or entry is int:
+                    if re.search('[a-z]|[0-9]', entry, re.IGNORECASE):
                         alphanumeric_entries += 1
                     else:
                         nan_entries += 1
@@ -102,16 +104,6 @@ class PHREEQdb():
                 del self.elements[column]
 
         self.elements.columns = ['elements', 'species', 'alk', 'gfw_formula', 'element_gfw']
-    #     self.elements.rename(columns = {'SOLUTION_MASTER_SPECIES':'elements'}, inplace = True)
-    #         self.elements = self.elements.iloc[pandas.RangeIndex(len(self.elements)).drop([x for x in range(4)])]
-        elements_list = list(self.elements['elements'])
-
-        # define the minerals content for the database
-        self.minerals = pandas.DataFrame(minerals_rows)
-        self.minerals.columns = self.minerals.iloc[0]
-        self.minerals = self.minerals.drop(0)
-        mineral_list = list(self.minerals['phases'])
-        formula_list = list(self.minerals['formula'])     
         
         if self.verbose:
             print(self.elements)            
@@ -192,6 +184,10 @@ class ChemMW():
             self.final = True
         if ch_no >= len(formula)-1:
             self.end = True
+            
+    def _significant_digits(self, mass):
+        mass_sigfigs = len(re.sub('\.', '', str(mass)))
+        self.sigfigs = min(mass_sigfigs, self.sigfigs)
 
     def _group_parsing(self,formula, ch_number):
         self.group_masses = {
@@ -307,11 +303,13 @@ class ChemMW():
             return skip_characters, mass
         elif re.search('[A-Z]',formula[ch_number]):
             self._final(formula,ch_number)
+            element = formula[ch_number]
             if self.end:
                 element = formula[ch_number]
                 stoich = 1
-                mass = stoich * elemental_masses[element] 
                 
+                self._significant_digits(elemental_masses[element])
+                mass = stoich * elemental_masses[element] 
                 # track the elemental proportion
                 if element not in self.element_masses:
                     self.element_masses[element] = mass
@@ -339,6 +337,7 @@ class ChemMW():
                 else:
                     stoich = 1
 
+                self._significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 
                 # track the elemental proportion
@@ -355,8 +354,7 @@ class ChemMW():
 
             elif re.search('[0-9]', formula[ch_number+1]):
                 skips, stoich = self._parse_stoich(formula, ch_number+1)
-
-                element = formula[ch_number]
+                self._significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 
                 # track the elemental proportion
@@ -371,8 +369,7 @@ class ChemMW():
 
             elif formula[ch_number+1] == '.':
                 skips, stoich = self._parse_stoich(formula, ch_number+1)
-
-                element = formula[ch_number]
+                self._significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 
                 # track the elemental proportion
@@ -387,7 +384,7 @@ class ChemMW():
                 return skip_characters, mass
 
             elif re.search('[A-Z():+ ]', formula[ch_number+1]):
-                element = formula[ch_number]
+                self._significant_digits(elemental_masses[element])
                 mass = elemental_masses[element] 
                 
                 # track the elemental proportion
@@ -446,8 +443,8 @@ class ChemMW():
         
 
     def mass(self, formula):
-        self.groups = self.layer = self.skip_characters = 0
-        skip_characters = self.mw = 0 
+        self.groups = self.layer = self.skip_characters = self.raw_mw = self.mw = 0 
+        self.sigfigs = inf
         self.formula = formula
         formula = re.sub('[_]', '', formula)
         self.element_masses = {}
@@ -467,7 +464,7 @@ class ChemMW():
                     print('skipping_mass', ch)
                 continue
             if self.verbose:
-                print('\ntotal_mass', self.mw)
+                print('\ntotal_mass', self.raw_mw)
                 print('ch_number', ch_number)
                 print('ch', ch)
 
@@ -476,11 +473,12 @@ class ChemMW():
                 
             if formula[ch_number] == '(':
                 self.skip_characters, mass = self._group_parsing(formula, ch_number)
-                self.mw += mass 
+                self.raw_mw += mass 
             else:
                 self.skip_characters, mass = self._element_parsing(formula, ch_number)
-                self.mw += mass
+                self.raw_mw += mass
 
+        self.mw = round(self.raw_mw, self.sigfigs)
         if self.printing:
             print('\n{} --- MW (amu): {}'.format(formula, self.mw))
             

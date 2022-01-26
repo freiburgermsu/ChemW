@@ -11,9 +11,9 @@ setup(
   package_data = {
 	'test':['databases/*'],
   },
-  version = '0.1.1',
+  version = '0.1.2',
   license = 'MIT',
-  description = "Calculates the Molecular Weight from a string of an arbitrary chemical formula.", 
+  description = "Calculates the Molecular Weight, to the appropriate significant digits, from a string of an arbitrary chemical formula.", 
   long_description = readme,
   author = 'Andrew Freiburger',               
   author_email = 'andrewfreiburger@gmail.com',
