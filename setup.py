@@ -12,7 +12,7 @@ setup(
 	'test':['databases/*'],
     'chemw':['amino_acids_masses.json'],
   },
-  version = '0.1.3',
+  version = '0.1.4',
   license = 'MIT',
   description = "Calculates the Molecular Weight, to the appropriate significant digits, from a string of an arbitrary chemical formula, protein sequence, or common chemical name.", 
   long_description = readme,
@@ -20,5 +20,5 @@ setup(
   author_email = 'andrewfreiburger@gmail.com',
   url = 'https://github.com/freiburgermsu/chemw',   
   keywords = ['chemistry', 'math', 'mass', 'weight', 'PHREEQC', 'molecular', 'mineral', 'formula', 'calculate'],
-  install_requires = ['chemicals', 'pandas']
+  install_requires = ['chemicals', 'pandas', 'pubchempy']
 )
