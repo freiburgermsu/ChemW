@@ -2,6 +2,7 @@ from pandas import DataFrame
 from shutil import rmtree
 from math import isclose
 from glob import glob
+#import requests, io, json
 import chemw
 import re, os
 
@@ -46,19 +47,42 @@ def test_accuracy():
         assert zero == 0
         
     # test the MW of common names
-    common_names = {
-            'water': 18.01528,
-            'acetone': 58.07914, 
-            'glycine': 75.0666
-            }
-    for chem in common_names:
-        assert chem_mw.mass(common_name = chem) == common_names[chem]
+    common_chemicals = {
+    'water': 18.01528, 
+    'acetone': 58.07914, 
+    'toluene': 92.13842, 
+    'glucose': 180.15588, 
+    'sucrose': 342.29648, 
+    'aspirin': 180.15742, 
+    'hydrochloric acid': 36.46094,
+    "alanine": 89.09318,
+    "arginine": 174.20096,
+    "asparagine": 132.11792,
+    "aspartic acid": 133.10268,
+    "cysteine": 121.15818,
+    "glutamic acid": 147.12926,
+    "glutamine": 146.1445,
+    "glycine": 75.0666,
+    "histidine": 155.15456,
+    "isoleucine": 131.17292,
+    "leucine": 131.17292,
+    "lysine": 146.18756,
+    "methionine": 149.21134,
+    "phenylalanine": 165.18914,
+    "proline": 115.13046,
+    "serine": 105.09258,
+    "threonine": 119.11916,
+    "tryptophan": 204.22518,
+    "tyrosine": 181.18854,
+    "valine": 117.14634,
+    }
+    for chem in common_chemicals:
+        assert chem_mw.mass(common_name = chem) == common_chemicals[chem]
             
             
 def test_phreeq_db():
     # process the PHREEQ databases 
     phreeq_databases = [db for db in glob('databases/*.dat')]
-    # output_path = os.path.join(os.path.dirname(__file__), 'PHREEQqb')
     phreeq_db = chemw.PHREEQdb()
     for db in phreeq_databases:
         print('\n\n\n', re.search('([A-Za-z0-9_\.]+(?=\.dat))',db).group(), 'database\n', '='*len(db))

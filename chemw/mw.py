@@ -331,7 +331,10 @@ class ChemMW():
              common_name: str = None  # The common name of the chemical, as they are recognized by PubChem
              ):  
         if common_name is not None:
-            formula = get_compounds(common_name, 'name')[0].molecular_formula
+            try:
+                formula = get_compounds(common_name, 'name')[0].molecular_formula
+            except:
+                raise ValueError('The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
         
         self.groups = self.layer = self.skip_characters = self.raw_mw = self.mw = 0 
         self.sigfigs = inf
