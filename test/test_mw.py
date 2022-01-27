@@ -44,6 +44,15 @@ def test_accuracy():
     # affirm that iterated entities are zero
     for zero in [chem_mw.groups, chem_mw.layer, chem_mw.skip_characters]:
         assert zero == 0
+        
+    # test the MW of common names
+    common_names = {
+            'water': 18.01528,
+            'acetone': 58.07914, 
+            'glycine': 75.0666
+            }
+    for chem in common_names:
+        assert chem_mw.mass(common_name = chem) == common_names[chem]
             
             
 def test_phreeq_db():
