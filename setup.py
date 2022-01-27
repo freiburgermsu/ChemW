@@ -10,6 +10,7 @@ setup(
   packages = find_packages(),
   package_data = {
 	'test':['databases/*'],
+    'chemw':['amino_acids_masses.json'],
   },
   version = '0.1.2',
   license = 'MIT',

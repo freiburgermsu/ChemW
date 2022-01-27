@@ -1,6 +1,8 @@
+from pubchempy import get_compounds
 from chemicals import periodic_table
 from math import inf
 from glob import glob
+import requests, io
 import pandas
 import json, re, os
 
@@ -20,125 +22,7 @@ def isnumber(num):
 elemental_masses = {}
 for element in periodic_table:
     elemental_masses[element.symbol] = element.MW
-    
-class PHREEQdb():
-    def __init__(self, output_path = None, verbose = False, printing = False):
-        self.chem_mw = ChemMW(verbose = verbose, printing = printing)
-        self.verbose = verbose
-        
-        # define the output path
-        if output_path is None:
-            count = 0
-            self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
-            while os.path.exists(self.output_path):
-                count += 1
-                self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')            
-        else:
-            self.output_path = output_path
-        if not os.path.exists(self.output_path):
-            os.mkdir(self.output_path)
-        
 
-    def _database_parsing(self,):
-        start_master = False
-        if self.db.columns == ['SOLUTION_MASTER_SPECIES']:
-            start_master = True
-        self.db.columns = ['content']
-
-        elements_rows = []
-        minerals_rows = []
-        elemental_parsing = False
-        mineral_parsing = False
-        for index, row in self.db.iterrows():
-            if (re.search('SOLUTION_MASTER_SPECIES', row['content']) or start_master) and not elemental_parsing :
-                while not re.search('SOLUTION_SPECIES', self.db.at[index, 'content']):
-                    split_row = self.db.at[index, 'content'].split()
-                    if all(not re.search('^#', entity) for entity in split_row):
-                        elements_rows.append(split_row)
-                    index+= 1
-                elemental_parsing = True
-
-            if re.search('PHASES', row['content']) and not mineral_parsing:
-                loop = False
-                while not re.search('PITZER|EXCHANGE_MASTER_SPECIES|SURFACE_MASTER_SPECIES', self.db.at[index, 'content']):
-                    if not loop:
-                        minerals_rows.append(['phases', 'formula'])
-                        loop = True
-                        index += 1
-                        continue
-
-                    if re.search('(^\w+\s*\d*$)',self.db.at[index, 'content']):
-                        reactants = self.db.at[index+1, 'content'].split(' = ')[0]
-                        if all('#' not in entity for entity in reactants):
-                            formula = reactants.split('+')[0].strip()
-                            name = self.db.at[index, 'content']
-                            name = re.sub('(\s+\d*)', '', name)
-                            minerals_rows.append([name, formula])
-                    index+= 1
-
-                    if index == len(self.db):
-                        break
-                mineral_parsing = True
-
-        # define the elements content for the database
-        self.minerals = pandas.DataFrame(minerals_rows)
-        self.minerals.columns = self.minerals.iloc[0]
-        self.minerals = self.minerals.drop(0)
-        
-        self.elements = pandas.DataFrame(elements_rows)
-        self.elements.fillna(' ')
-        self.elements.drop([0], inplace = True)
-        for column in self.elements:
-            nan_entries = 0
-            alphanumeric_entries = 0
-            for entry in self.elements[column]:
-                if entry is not None:
-                    if re.search('[a-z]|[0-9]', entry, re.IGNORECASE):
-                        alphanumeric_entries += 1
-                    else:
-                        nan_entries += 1
-                else:
-                    nan_entries += 1
-            if nan_entries > alphanumeric_entries and len(self.elements.columns) > 5:
-                print('deleted column: ', column)
-                del self.elements[column]
-
-        self.elements.columns = ['elements', 'species', 'alk', 'gfw_formula', 'element_gfw']
-        
-        if self.verbose:
-            print(self.elements)            
-            print(self.minerals)
-        
-        
-    def process(self,db_path):
-        # load the database
-        self.db_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db_path).group()
-        self.db = pandas.read_table(db_path, sep='\n')
-        self._database_parsing()
-
-        # add elements to the JSON
-        database_json = {'elements': {}, 'minerals': {}}
-        for index, element in self.elements.iterrows():
-            database_json['elements'][element['elements']] = {'charge_specie': element['alk'], 'gfw_formula':element['gfw_formula'], 'element_gfw':element['element_gfw']}
-
-        # add minerals to the JSON
-        for index, mineral in self.minerals.iterrows():
-            phase = mineral['phases']                     
-            if re.search('phases|phase', phase, flags = re.IGNORECASE):
-                continue
-                        
-            # calculate the chemical masses for each mineral 
-            formula = mineral['formula']
-            formula = re.sub('Cyanide|Cyanate', 'CN', formula)   
-            
-            database_json['minerals'][phase] = {}
-            database_json['minerals'][phase]['formula'] = formula
-            database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
-
-        # export the JSON files
-        with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
-            json.dump(database_json, output, indent = 4)
-        
         
 class ChemMW():
     def __init__(self, verbose = False, printing = True):
@@ -442,7 +326,13 @@ class ChemMW():
         self.final = False
         
 
-    def mass(self, formula):
+    def mass(self, 
+             formula: str = None,   # The molecular formula of the chemical whose mass will be calculated
+             common_name: str = None  # The common name of the chemical, as they are recognized by PubChem
+             ):  
+        if common_name is not None:
+            formula = pubchempy.get_compounds(common_name, 'name')[0].molecular_formula
+        
         self.groups = self.layer = self.skip_characters = self.raw_mw = self.mw = 0 
         self.sigfigs = inf
         self.formula = formula
@@ -480,7 +370,7 @@ class ChemMW():
 
         self.mw = round(self.raw_mw, self.sigfigs)
         if self.printing:
-            print('\n{} --- MW (amu): {}'.format(formula, self.mw))
+            print('{} --- MW (amu): {}'.format(formula, self.mw))
             
         # normalize the elemental proportions
         self.proportions = {}
@@ -492,3 +382,202 @@ class ChemMW():
         self._reset()
         
         return self.mw
+    
+    
+    
+class Proteins():
+    def __init__(self, verbose = False, printing = True):
+        self.chem_mw = ChemMW(verbose = verbose, printing = printing)
+        self.verbose = verbose        
+        self.printing = printing
+        
+        # load amino acid masses, which were previously calculated through ChemMW to expedite computational time
+        masses_path = os.path.join(os.path.dirname(__file__), 'amino_acids_masses.json')
+        self.amino_acid_masses = json.load(open(masses_path))
+        
+    def _significant_digits(self, mass):
+        mass_sigfigs = len(re.sub('\.', '', str(mass)))
+        self.sigfigs = min(mass_sigfigs, self.sigfigs)
+        
+    def mass(self,
+                protein_sequence: str = None, # the sequence of either one_letter or hyphenated three_letter amino acid sequences
+                protein_fasta_path: str = None, # the file to a local FASTA file
+                fasta_link: str = None  # providing the link to a FASTA file as a string
+                ):       
+        def protein_mass(amino_acids):
+            protein_mass = 0
+            for amino_acid in amino_acids:
+                if not re.search('[a-z]',amino_acid, flags = re.IGNORECASE):
+                    if amino_acid != '*':
+                        print(f'--> ERROR: An unexpected character {amino_acid} was encountered in the protein sequence {amino_acids}.')
+                    continue
+                mass = self.amino_acid_masses[amino_acid]
+                self._significant_digits(mass)
+                self.raw_protein_mass += mass
+                protein_mass += mass
+            return protein_mass
+                
+        fasta = False
+        if protein_fasta_path is not None:
+            with open(protein_fasta_path) as input:
+                lines = input.readlines()   
+            fasta = True
+        elif fasta_link is not None:
+            sequence = requests.get(fasta_link).content
+            lines = io.StringIO(sequence.decode('utf-8')).readlines()
+            fasta = True
+        else:
+            three_letter_remainder = re.sub('(\-\w{3})', '', protein_sequence, flags = re.IGNORECASE)
+            one_letter_remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
+        
+        self.raw_protein_mass = 0
+        self.sigfigs = inf
+        if fasta:
+            self.fasta_protein_masses = {}
+            for line in lines:
+                if not re.search('>', line):
+                    line = line.rstrip()
+                    mass = protein_mass(line)
+                    self.fasta_protein_masses[line] = mass
+        elif three_letter_remainder == '' or three_letter_remainder == '*':
+            amino_acids = protein_sequence.split('-')
+            protein_mass(amino_acids)
+        elif one_letter_remainder == '' or one_letter_remainder == '*':                
+            protein_mass(protein_sequence)
+        else:
+            raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
+            
+        if fasta:
+            for protein in self.fasta_protein_masses:
+                self.fasta_protein_masses[protein] = round(self.fasta_protein_masses[protein], self.sigfigs)                
+                if self.printing:
+                    string = ' - '.join(['>Protein', f'{len(protein)}residues', f'{self.fasta_protein_masses[protein]}amu', f'\n{protein}'])
+                    print(string)
+            
+            return self.fasta_protein_masses                
+        else:
+            self.protein_mass = round(self.raw_protein_mass, self.sigfigs)
+            if self.printing:
+                string = ' - '.join(['>Protein', f'{len(protein_sequence)}residues', f'{self.protein_mass}amu', f'\n{protein_sequence}'])
+                print(string)
+            
+            return self.protein_mass
+
+
+class PHREEQdb():
+    def __init__(self, output_path = None, verbose = False, printing = False):
+        self.chem_mw = ChemMW(verbose = verbose, printing = printing)
+        self.verbose = verbose
+        
+        # define the output path
+        if output_path is None:
+            count = 0
+            self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
+            while os.path.exists(self.output_path):
+                count += 1
+                self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')            
+        else:
+            self.output_path = output_path
+        if not os.path.exists(self.output_path):
+            os.mkdir(self.output_path)
+        
+
+    def _database_parsing(self,):
+        start_master = False
+        if self.db.columns == ['SOLUTION_MASTER_SPECIES']:
+            start_master = True
+        self.db.columns = ['content']
+
+        elements_rows = []
+        minerals_rows = []
+        elemental_parsing = False
+        mineral_parsing = False
+        for index, row in self.db.iterrows():
+            if (re.search('SOLUTION_MASTER_SPECIES', row['content']) or start_master) and not elemental_parsing :
+                while not re.search('SOLUTION_SPECIES', self.db.at[index, 'content']):
+                    split_row = self.db.at[index, 'content'].split()
+                    if all(not re.search('^#', entity) for entity in split_row):
+                        elements_rows.append(split_row)
+                    index+= 1
+                elemental_parsing = True
+
+            if re.search('PHASES', row['content']) and not mineral_parsing:
+                loop = False
+                while not re.search('PITZER|EXCHANGE_MASTER_SPECIES|SURFACE_MASTER_SPECIES', self.db.at[index, 'content']):
+                    if not loop:
+                        minerals_rows.append(['phases', 'formula'])
+                        loop = True
+                        index += 1
+                        continue
+
+                    if re.search('(^\w+\s*\d*$)',self.db.at[index, 'content']):
+                        reactants = self.db.at[index+1, 'content'].split(' = ')[0]
+                        if all('#' not in entity for entity in reactants):
+                            formula = reactants.split('+')[0].strip()
+                            name = self.db.at[index, 'content']
+                            name = re.sub('(\s+\d*)', '', name)
+                            minerals_rows.append([name, formula])
+                    index+= 1
+
+                    if index == len(self.db):
+                        break
+                mineral_parsing = True
+
+        # define the elements content for the database
+        self.minerals = pandas.DataFrame(minerals_rows)
+        self.minerals.columns = self.minerals.iloc[0]
+        self.minerals = self.minerals.drop(0)
+        
+        self.elements = pandas.DataFrame(elements_rows)
+        self.elements.fillna(' ')
+        self.elements.drop([0], inplace = True)
+        for column in self.elements:
+            nan_entries = 0
+            alphanumeric_entries = 0
+            for entry in self.elements[column]:
+                if entry is not None:
+                    if re.search('[a-z]|[0-9]', entry, re.IGNORECASE):
+                        alphanumeric_entries += 1
+                    else:
+                        nan_entries += 1
+                else:
+                    nan_entries += 1
+            if nan_entries > alphanumeric_entries and len(self.elements.columns) > 5:
+                print('deleted column: ', column)
+                del self.elements[column]
+
+        self.elements.columns = ['elements', 'species', 'alk', 'gfw_formula', 'element_gfw']
+        
+        if self.verbose:
+            print(self.elements)            
+            print(self.minerals)
+        
+        
+    def process(self,db_path):
+        # load the database
+        self.db_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db_path).group()
+        self.db = pandas.read_table(db_path, sep='\n')
+        self._database_parsing()
+
+        # add elements to the JSON
+        database_json = {'elements': {}, 'minerals': {}}
+        for index, element in self.elements.iterrows():
+            database_json['elements'][element['elements']] = {'charge_specie': element['alk'], 'gfw_formula':element['gfw_formula'], 'element_gfw':element['element_gfw']}
+
+        # add minerals to the JSON
+        for index, mineral in self.minerals.iterrows():
+            phase = mineral['phases']                     
+            if re.search('phases|phase', phase, flags = re.IGNORECASE):
+                continue
+                        
+            # calculate the chemical masses for each mineral 
+            formula = mineral['formula']
+            formula = re.sub('Cyanide|Cyanate', 'CN', formula)   
+            
+            database_json['minerals'][phase] = {}
+            database_json['minerals'][phase]['formula'] = formula
+            database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
+
+        # export the JSON files
+        with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
+            json.dump(database_json, output, indent = 4)
