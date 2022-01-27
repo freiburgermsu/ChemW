@@ -66,9 +66,9 @@ The parameterized data is fitted to the Hill equation, with the following argume
 
 - *formula* ``str``: parameterizes the chemical formula for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following table:
 
-===================================================  ========================================================================================
+===================================================  =========================================================================================================
  Example chemical                                      Format option
-===================================================  ========================================================================================
+===================================================  =========================================================================================================
  ``'C6H12O6'``                                           Any organic compounds can be easily processed.
  ``'C60_H120_O2'``                                       Underscores can arbitrarily separate content, since these are ignored by ``ChemMW``.
 ``'Na2.43_Cl_(OH)2_(OH)1.2_(OH)'``                      An arbitrary number of groups can be distinguished in the chemical formula, 
@@ -81,9 +81,9 @@ The parameterized data is fitted to the Hill equation, with the following argume
 ``'Na2SO4:3K2SO4'``                                              Non-water entities can be complexed.
 ``'CaCl2:(MgCl2)2:12H2O'``                              Multiple complexations can be applied with repeated ``:`` separators. 
  ``'Ca1.019Na.136K.006Al2.18Si6.82O18:7.33H2O'``       The complexity, while remaining within the aforementioned format, is arbitrary.
-===================================================  ========================================================================================
+===================================================  =========================================================================================================
                                                             
-- *common_name* ``str``: parameterizes the common name of the chemical for which the MW is desired, as it is recognized by `Pubchem https://pubchem.ncbi.nlm.nih.gov/_. 
+- *common_name* ``str``: parameterizes the common name of the chemical for which the MW is desired, as it is recognized by `Pubchem <https://pubchem.ncbi.nlm.nih.gov>`_. 
 
 
 ++++++++++++++++++++++++++
