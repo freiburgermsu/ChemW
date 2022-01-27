@@ -64,3 +64,18 @@ def test_phreeq_db():
    
     # delete the directory 
     rmtree(phreeq_db.output_path)
+    
+def test_proteins():
+    protein = chemw.Proteins()
+    
+    # verify the sequence accuracy
+    assert protein.mass('VPVIHTKPLFIRNFDQRCSCSRCFYLHSSTYIECTYISRFSKISLVSVTDFSLNGNVSTVFVPATRDSVPLHIIAPSSLIV') == 10537.67404
+    
+    # verify the FASTA accuracy
+    protein.mass(fasta_path = 'protein_sequence.fasta')
+    for line in protein.fasta_lines:
+        if re.search('([0-9.]+)(?=_amu)', line):
+            mass = float(re.search('([0-9.]+)(?=_amu)', line).group())
+        else:
+            seq = line.rstrip()
+            assert protein.fasta_protein_masses[seq] == mass

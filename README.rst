@@ -123,7 +123,7 @@ The parameterized data is fitted to the Hill equation, with the following argume
 
 .. code-block:: python
 
- protein.mass(protein_sequence = None, protein_fasta_path = None)
+ protein.mass(protein_sequence = None,  fasta_path = None, fasta_link = None  # providing the link to a FASTA file as a string = None)
 
 - *protein_sequence* ``str``: The sequence of the protein for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following formulae:
 
@@ -134,7 +134,7 @@ The parameterized data is fitted to the Hill equation, with the following argume
 ``'gly-gln-his-ala-arg-asn-phe-pro-thr'``                A sequence of three-letter amino acid codes must be delimited with hyphens.
 ===================================================  ===================================================================================
 
-- *protein_fasta_path* ``str``: The path to a FASTA file that contains the sequence, or multiple sequences, of the protein(s) for which the MW is desired. The file can contain any abritrary number of sequences, as long as each sequence commences with a ``>`` in the description line.
+- *fasta_path* & *fasta_link* ``str``: The path and URL link, respectively, to a FASTA file that contains the sequence, or multiple sequences, of the protein(s) for which the MW is desired. Each sequence must commence with a ``>`` as the first character of the description line.
 
 
 ++++++++++++++++++++++++++
@@ -145,6 +145,7 @@ The ``Proteins`` object retains numerous components that are accessible to the u
 - *protein_mass* & *raw_protein_mass* ``float``: The protein mass that is adjusted and unadjusted for the appropriate number of significant digits.
 - *fasta_protein_masses* ``dict``: A dictionary of each sequence from processing a FASTA file, where the value is the corresponding sequence's mass.
 - *amino_acid_masses* ``dict``: A dictionary of all natural amino acids, and their masses to the appropriate number of significant digits.
+- *fasta_lines* ``list``: The raw list of lines that constitute the loaded FASTA file, which can be used for post-processing.
 - *sigfigs* ``float``: The number of sigfigs that are defined for each protein.
 - *chem_mw* ``ChemMW``: An instance of the ``ChemMW`` object is loaded, which allows the user to access the ``ChemMW`` module through the ``PHREEQdb`` module.
 

@@ -401,7 +401,7 @@ class Proteins():
         
     def mass(self,
                 protein_sequence: str = None, # the sequence of either one_letter or hyphenated three_letter amino acid sequences
-                protein_fasta_path: str = None, # the file to a local FASTA file
+                fasta_path: str = None, # the file to a local FASTA file
                 fasta_link: str = None  # providing the link to a FASTA file as a string
                 ):       
         def protein_mass(amino_acids):
@@ -417,24 +417,21 @@ class Proteins():
                 protein_mass += mass
             return protein_mass
                 
-        fasta = False
-        if protein_fasta_path is not None:
-            with open(protein_fasta_path) as input:
-                lines = input.readlines()   
-            fasta = True
+        if fasta_path is not None:
+            with open(fasta_path) as input:
+                self.fasta_lines = input.readlines()   
         elif fasta_link is not None:
             sequence = requests.get(fasta_link).content
-            lines = io.StringIO(sequence.decode('utf-8')).readlines()
-            fasta = True
+            self.fasta_lines = io.StringIO(sequence.decode('utf-8')).readlines()
         else:
             three_letter_remainder = re.sub('(\-\w{3})', '', protein_sequence, flags = re.IGNORECASE)
             one_letter_remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
         
         self.raw_protein_mass = 0
         self.sigfigs = inf
-        if fasta:
+        if fasta_path or fasta_link:
             self.fasta_protein_masses = {}
-            for line in lines:
+            for line in self.fasta_lines:
                 if not re.search('>', line):
                     line = line.rstrip()
                     mass = protein_mass(line)
@@ -447,7 +444,7 @@ class Proteins():
         else:
             raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
             
-        if fasta:
+        if fasta_path or fasta_link:
             for protein in self.fasta_protein_masses:
                 self.fasta_protein_masses[protein] = round(self.fasta_protein_masses[protein], self.sigfigs)                
                 if self.printing:
