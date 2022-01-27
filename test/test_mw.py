@@ -72,7 +72,7 @@ def test_proteins():
     assert protein.mass('VPVIHTKPLFIRNFDQRCSCSRCFYLHSSTYIECTYISRFSKISLVSVTDFSLNGNVSTVFVPATRDSVPLHIIAPSSLIV') == 10537.67404
     
     # verify the FASTA accuracy
-    protein.mass(fasta_path = 'protein_sequence.fasta')
+    protein.mass(fasta_path = os.path.join(os.path.dirname(__file__),'protein_sequence.fasta'))
     for line in protein.fasta_lines:
         if re.search('([0-9.]+)(?=_amu)', line):
             mass = float(re.search('([0-9.]+)(?=_amu)', line).group())

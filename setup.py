@@ -9,7 +9,7 @@ setup(
   package_dir = {'mw':'chemw'},
   packages = find_packages(),
   package_data = {
-	'test':['databases/*'],
+	'test':['databases/*', 'protein_sequence.fasta'],
     'chemw':['amino_acids_masses.json'],
   },
   version = '0.1.5',
