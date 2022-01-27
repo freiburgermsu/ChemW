@@ -21,9 +21,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           pip install chemw
-          pip install pandas
-          pip install requests
-          pip install pubchempy
           pip show chemw
       - name: Run tests
         run: python -m pytest test\test_mw.py
