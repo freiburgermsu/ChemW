@@ -20,5 +20,5 @@ setup(
   author_email = 'andrewfreiburger@gmail.com',
   url = 'https://github.com/freiburgermsu/chemw',   
   keywords = ['chemistry', 'math', 'mass', 'weight', 'PHREEQC', 'molecular', 'mineral', 'formula', 'calculate'],
-  install_requires = ['chemicals', 'pandas', 'pubchempy']
+  install_requires = ['chemicals', 'pandas', 'pubchempy', 'requests']
 )
