@@ -12,7 +12,7 @@ setup(
 	'test':['databases/*'],
     'chemw':['amino_acids_masses.json'],
   },
-  version = '0.1.4',
+  version = '0.1.5',
   license = 'MIT',
   description = "Calculates the Molecular Weight, to the appropriate significant digits, from a string of an arbitrary chemical formula, protein sequence, or common chemical name.", 
   long_description = readme,
