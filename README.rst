@@ -117,7 +117,7 @@ The data environment, in a `Python IDE <https://www.simplilearn.com/tutorials/py
 
 - *verbose* & *printing* ``bool``: specifies whether troubleshooting information or MW results will be printed, respectively.
 
-**Returned** *protein_mass* ``float``: The mass of the parameterized protein sequence to the appropriate significant digitsthat are alloted by those of the elemental masses.
+**Returns** *protein_mass* ``float``: The mass of the parameterized protein sequence to the appropriate significant digitsthat are alloted by those of the elemental masses.
 
 ++++++++++++++++
 mass()
