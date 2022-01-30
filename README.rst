@@ -62,7 +62,7 @@ The parameterized data is fitted to the Hill equation, with the following argume
 
 .. code-block:: python
 
- chem_mw.mass(formula = None, common_name = None)
+ mw = chem_mw.mass(formula = None, common_name = None)
 
 - *formula* ``str``: parameterizes the chemical formula for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following table:
 
@@ -84,6 +84,8 @@ The parameterized data is fitted to the Hill equation, with the following argume
 ===================================================  =========================================================================================================
                                                             
 - *common_name* ``str``: parameterizes the common name of the chemical for which the MW is desired, as it is recognized by `Pubchem <https://pubchem.ncbi.nlm.nih.gov>`_: e.g. ``'water'``, ``'acetone'``, ``'toluene'``, ``'glucose'``, ``'aspirin'``, ``'hydrochloric acid'``, ``"alanine"``, ``"glutamine"``, ``"phenylalanine"``, ``"tryptophan"``, et cetera.
+
+**Returns** *mw* ``float``: The mass of the parameterized chemical to the appropriate significant digitsthat are alloted by those of the elemental masses.
 
 
 ++++++++++++++++++++++++++
@@ -111,9 +113,11 @@ The data environment, in a `Python IDE <https://www.simplilearn.com/tutorials/py
 .. code-block:: python
 
   import chemw
-  protein = chemw.Proteins(verbose = False, printing = True)
+  protein_mass = chemw.Proteins(verbose = False, printing = True)
 
 - *verbose* & *printing* ``bool``: specifies whether troubleshooting information or MW results will be printed, respectively.
+
+**Returned** *protein_mass* ``float``: The mass of the parameterized protein sequence to the appropriate significant digitsthat are alloted by those of the elemental masses.
 
 ++++++++++++++++
 mass()
