@@ -458,7 +458,7 @@ class Proteins():
         else:
             self.protein_mass = round(self.raw_protein_mass, self.sigfigs)
             if self.printing:
-                string = ' - '.join(['>Protein', f'{len(protein_sequence)}residues', f'{self.protein_mass}amu', f'\n{protein_sequence}'])
+                string = ' - '.join(['>Protein', f'{len(protein_sequence)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
             
             return self.protein_mass
