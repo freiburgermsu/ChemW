@@ -373,7 +373,10 @@ class ChemMW():
 
         self.mw = round(self.raw_mw, self.sigfigs)
         if self.printing:
-            print('{} --- MW (amu): {}'.format(formula, self.mw))
+            if common_name is not None:
+                print('{}({}) --- MW (amu): {}'.format(common_name, formula, self.mw))
+            else:
+                print('{} --- MW (amu): {}'.format(formula, self.mw))
             
         # normalize the elemental proportions
         self.proportions = {}
@@ -407,8 +410,7 @@ class Proteins():
                 fasta_path: str = None, # the file to a local FASTA file
                 fasta_link: str = None  # providing the link to a FASTA file as a string
                 ):       
-        def protein_mass(amino_acids):
-            protein_mass = 0
+        def calc_protein_mass(amino_acids):
             for amino_acid in amino_acids:
                 if not re.search('[a-z]',amino_acid, flags = re.IGNORECASE):
                     if amino_acid != '*':
@@ -417,8 +419,7 @@ class Proteins():
                 mass = self.amino_acid_masses[amino_acid]
                 self._significant_digits(mass)
                 self.raw_protein_mass += mass
-                protein_mass += mass
-            return protein_mass
+            return round(self.raw_protein_mass, self.sigfigs)
                 
         if fasta_path is not None:
             with open(fasta_path) as input:
@@ -427,7 +428,7 @@ class Proteins():
             sequence = requests.get(fasta_link).content
             self.fasta_lines = io.StringIO(sequence.decode('utf-8')).readlines()
         else:
-            three_letter_remainder = re.sub('(\-\w{3})', '', protein_sequence, flags = re.IGNORECASE)
+            three_letter_remainder = re.sub('(\w{3}|\-)', '', protein_sequence, flags = re.IGNORECASE)
             one_letter_remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
         
         self.raw_protein_mass = 0
@@ -436,14 +437,18 @@ class Proteins():
             self.fasta_protein_masses = {}
             for line in self.fasta_lines:
                 if not re.search('>', line):
-                    line = line.rstrip()
-                    mass = protein_mass(line)
+                    line = line.rstrip().upper()
+                    mass = calc_protein_mass(line)
                     self.fasta_protein_masses[line] = mass
         elif three_letter_remainder == '' or three_letter_remainder == '*':
             amino_acids = protein_sequence.split('-')
-            protein_mass(amino_acids)
-        elif one_letter_remainder == '' or one_letter_remainder == '*':                
-            protein_mass(protein_sequence)
+            self.protein_mass = calc_protein_mass(amino_acids)
+            if self.printing:
+                string = ' - '.join(['>Protein', f'{len(amino_acids)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
+                print(string)
+            return self.protein_mass
+        elif one_letter_remainder == '' or one_letter_remainder == '*':    
+            self.protein_mass = calc_protein_mass(protein_sequence.upper())
         else:
             raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
             
@@ -451,7 +456,7 @@ class Proteins():
             for protein in self.fasta_protein_masses:
                 self.fasta_protein_masses[protein] = round(self.fasta_protein_masses[protein], self.sigfigs)                
                 if self.printing:
-                    string = ' - '.join(['>Protein', f'{len(protein)}residues', f'{self.fasta_protein_masses[protein]}amu', f'\n{protein}'])
+                    string = ' - '.join(['>Protein', f'{len(protein)}_residues', f'{self.fasta_protein_masses[protein]}_amu']) + f'\n{protein}'
                     print(string)
             
             return self.fasta_protein_masses                
