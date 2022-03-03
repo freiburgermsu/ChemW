@@ -22,6 +22,49 @@ def isnumber(num):
 elemental_masses = {}
 for element in periodic_table:
     elemental_masses[element.symbol] = element.MW
+    
+# allows case insensitive dictionary searches
+class CaseInsensitiveDict(dict):        # sourced from https://stackoverflow.com/questions/2082152/case-insensitive-dictionary
+    @classmethod
+    def _k(cls, key):
+        return key.lower() if isinstance(key, str) else key
+
+    def __init__(self, *args, **kwargs):
+        super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
+        self._convert_keys()
+        
+    def __getitem__(self, key):
+        return super(CaseInsensitiveDict, self).__getitem__(self.__class__._k(key))
+    
+    def __setitem__(self, key, value):
+        super(CaseInsensitiveDict, self).__setitem__(self.__class__._k(key), value)
+        
+    def __delitem__(self, key):
+        return super(CaseInsensitiveDict, self).__delitem__(self.__class__._k(key))
+    
+    def __contains__(self, key):
+        return super(CaseInsensitiveDict, self).__contains__(self.__class__._k(key))
+    
+    def has_key(self, key):
+        return super(CaseInsensitiveDict, self).has_key(self.__class__._k(key))
+    
+    def pop(self, key, *args, **kwargs):
+        return super(CaseInsensitiveDict, self).pop(self.__class__._k(key), *args, **kwargs)
+    
+    def get(self, key, *args, **kwargs):
+        return super(CaseInsensitiveDict, self).get(self.__class__._k(key), *args, **kwargs)
+    
+    def setdefault(self, key, *args, **kwargs):
+        return super(CaseInsensitiveDict, self).setdefault(self.__class__._k(key), *args, **kwargs)
+    
+    def update(self, E=None, **F):
+        super(CaseInsensitiveDict, self).update(self.__class__(E))
+        super(CaseInsensitiveDict, self).update(self.__class__(**F))
+        
+    def _convert_keys(self):
+        for k in list(self.keys()):
+            v = super(CaseInsensitiveDict, self).pop(k)
+            self.__setitem__(k, v)
 
         
 class ChemMW():
@@ -29,6 +72,7 @@ class ChemMW():
         self.verbose = verbose
         self.printing = printing
         self.final = self.end = False
+        self.sigfigs = inf
 
     def _parse_stoich(self,formula, ch_number):
         ch_no = ch_number  # ch_number is the first digit of the stoich float
@@ -72,6 +116,7 @@ class ChemMW():
     def _significant_digits(self, mass):
         mass_sigfigs = len(re.sub('\.', '', str(mass)))
         self.sigfigs = min(mass_sigfigs, self.sigfigs)
+        return round(mass, self.sigfigs)
 
     def _group_parsing(self,formula, ch_number):
         self.group_masses = {
@@ -334,7 +379,7 @@ class ChemMW():
             try:
                 formula = get_compounds(common_name, 'name')[0].molecular_formula
             except:
-                raise ValueError('The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
+                raise ValueError(f'The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
         
         self.groups = self.layer = self.skip_characters = self.raw_mw = self.mw = 0 
         self.sigfigs = inf
@@ -399,11 +444,7 @@ class Proteins():
         
         # load amino acid masses, which were previously calculated through ChemMW to expedite computational time
         masses_path = os.path.join(os.path.dirname(__file__), 'amino_acids_masses.json')
-        self.amino_acid_masses = json.load(open(masses_path))
-        
-    def _significant_digits(self, mass):
-        mass_sigfigs = len(re.sub('\.', '', str(mass)))
-        self.sigfigs = min(mass_sigfigs, self.sigfigs)
+        self.amino_acid_masses = CaseInsensitiveDict(json.load(open(masses_path)))
         
     def mass(self,
                 protein_sequence: str = None, # the sequence of either one_letter or hyphenated three_letter amino acid sequences
@@ -411,15 +452,17 @@ class Proteins():
                 fasta_link: str = None  # providing the link to a FASTA file as a string
                 ):       
         def calc_protein_mass(amino_acids):
+            self.raw_protein_mass = 0
             for amino_acid in amino_acids:
                 if not re.search('[a-z]',amino_acid, flags = re.IGNORECASE):
                     if amino_acid != '*':
                         print(f'--> ERROR: An unexpected character {amino_acid} was encountered in the protein sequence {amino_acids}.')
                     continue
-                mass = self.amino_acid_masses[amino_acid]
-                self._significant_digits(mass)
+                mass = self.amino_acid_masses.get(amino_acid)
                 self.raw_protein_mass += mass
-            return round(self.raw_protein_mass, self.sigfigs)
+                self.chem_mw._significant_digits(mass)
+                
+            return self.chem_mw._significant_digits(self.raw_protein_mass)
                 
         if fasta_path is not None:
             with open(fasta_path) as input:
@@ -428,8 +471,7 @@ class Proteins():
             sequence = requests.get(fasta_link).content
             self.fasta_lines = io.StringIO(sequence.decode('utf-8')).readlines()
         else:
-            three_letter_remainder = re.sub('(\w{3}|\-)', '', protein_sequence, flags = re.IGNORECASE)
-            one_letter_remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
+            remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
         
         self.raw_protein_mass = 0
         self.sigfigs = inf
@@ -437,38 +479,34 @@ class Proteins():
             self.fasta_protein_masses = {}
             for line in self.fasta_lines:
                 if not re.search('>', line):
-                    line = line.rstrip().upper()
-                    mass = calc_protein_mass(line)
-                    self.fasta_protein_masses[line] = mass
-        elif three_letter_remainder == '' or three_letter_remainder == '*':
+                    line = line.rstrip()
+                    self.fasta_protein_masses[line] = calc_protein_mass(line)
+        elif remainder == '' or remainder == '*':    
+            self.protein_mass = calc_protein_mass(protein_sequence)
+        elif re.search('(\-)+(\*)?', remainder):
             amino_acids = protein_sequence.split('-')
             self.protein_mass = calc_protein_mass(amino_acids)
             if self.printing:
                 string = ' - '.join(['>Protein', f'{len(amino_acids)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
             return self.protein_mass
-        elif one_letter_remainder == '' or one_letter_remainder == '*':    
-            self.protein_mass = calc_protein_mass(protein_sequence.upper())
         else:
             raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
             
         if fasta_path or fasta_link:
-            for protein in self.fasta_protein_masses:
-                self.fasta_protein_masses[protein] = round(self.fasta_protein_masses[protein], self.sigfigs)                
-                if self.printing:
+            if self.printing:
+                for protein in self.fasta_protein_masses:
                     string = ' - '.join(['>Protein', f'{len(protein)}_residues', f'{self.fasta_protein_masses[protein]}_amu']) + f'\n{protein}'
                     print(string)
             
             return self.fasta_protein_masses                
         else:
-            self.protein_mass = round(self.raw_protein_mass, self.sigfigs)
             if self.printing:
                 string = ' - '.join(['>Protein', f'{len(protein_sequence)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
             
             return self.protein_mass
-
-
+        
 class PHREEQdb():
     def __init__(self, output_path = None, verbose = False, printing = False):
         self.chem_mw = ChemMW(verbose = verbose, printing = printing)

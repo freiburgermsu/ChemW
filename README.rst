@@ -129,7 +129,7 @@ The parameterized data is fitted to the Hill equation, with the following argume
 
  protein.mass(protein_sequence = None,  fasta_path = None, fasta_link = None  # providing the link to a FASTA file as a string = None)
 
-- *protein_sequence* ``str``: The protein sequence, either upper-case or lower-case or some combination thereof, for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following formulae:
+- *protein_sequence* ``str``: The protein sequence, with any combination of upper-case or lower-case letters, for which the MW is desired. The acceptable formats for the formula are quite broad, which are exemplified in the following formulae:
 
 ===================================================  ===================================================================================
  Example sequence                                                Format option
