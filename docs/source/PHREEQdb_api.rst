@@ -1,7 +1,7 @@
 PHREEQdb
 ++++++++++++++++++
 
-The data environment, in a `Python IDE <https://www.simplilearn.com/tutorials/python-tutorial/python-ide>`_, is defined: 
+This class determines the MW of all minerals in a PHREEQ database file, after the initial parameters are specified: 
 
 .. code-block:: python
 

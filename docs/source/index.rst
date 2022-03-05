@@ -26,11 +26,18 @@ The ``ChemMW`` object of ``ChemW`` parses a chemical formula string -- which can
 
 The ``Proteins`` and ``PHREEQdg`` objects are applications of the ``ChemMW`` object that expand the utility of this library. The ``Proteins`` object returns the mass of a protein by either parsing a string of a protein sequence, or by parsing a `FASTA-formatted file <https://en.wikipedia.org/wiki/FASTA_format>`_. This is applied in the `Codons module <https://pypi.org/project/codons/>`_ for genome-scale biology and bioengineering. The ``PHREEQdb`` object of ``ChemW`` parses a `PHREEQ database <https://www.usgs.gov/software/phreeqc-version-3>`_ via the ``ChemMW`` object and exports a JSON of mineral masses for all of the described minerals in the database. This is pivotally applied to calculate the masses of complex minerals in the PHREEQC databases of the `ROSSpy module <https://pypi.org/project/ROSSpy/>`_ for reverse osmosis research.
 
-The ``ChemW`` library is offered with the `MIT License <https://opensource.org/licenses/MIT>`_\. Examples of the module are available in the examples directory of the `ChemW GitHub repository <https://github.com/freiburgermsu/ChemW>`_. Please submit errors or inaccuracies as `GitHub issues <https://github.com/freiburgermsu/ChemW/issues>`_ so that they may be resolved.
+The ``ChemW`` library is offered with the `MIT License <https://opensource.org/licenses/MIT>`_\. Examples of the module are available in the examples directory of the `ChemW GitHub repository <https://github.com/freiburgermsu/ChemW>`_. Please submit errors or inaccuracies as `GitHub issues <https://github.com/freiburgermsu/ChemW/issues>`_ so that they may be resolved. An effective `Python IDE <https://www.simplilearn.com/tutorials/python-tutorial/python-ide>`_ can be used to execute this module.
+
+Installation
+----------------
+
+The following command installs ``ChemW`` in a command prompt/terminal environment::
+ 
+ pip install chemw
    
 
 Contents
---------
+----------------
 
 .. toctree::
 
