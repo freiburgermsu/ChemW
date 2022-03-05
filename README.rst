@@ -28,5 +28,12 @@ The ``Proteins`` and ``PHREEQdg`` objects are applications of the ``ChemMW`` obj
 
 The ``ChemW`` library is offered with the `MIT License <https://opensource.org/licenses/MIT>`_\. Examples of the module are available in the examples directory of the `ChemW GitHub repository <https://github.com/freiburgermsu/ChemW>`_. Please submit errors or inaccuracies as `GitHub issues <https://github.com/freiburgermsu/ChemW/issues>`_ so that they may be resolved.
 
+Installation
+----------------
+
+The following command installs ``ChemW`` in a command prompt/terminal environment::
+ 
+ pip install chemw
+
 
 The full documentation is available on `ReadTheDocs <https://chemw.readthedocs.io/en/latest/index.html>`_.
