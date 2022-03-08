@@ -1,3 +1,5 @@
+The ``ChemMW`` package of ``ChemW`` parses a chemical formula string -- which can consist of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula. The significant digits of the reported MW matches the lowest significant digits from the set of elements that constitute the chemical formula, where the elemental masses are the most precise contemporary measurements of pure elements, per the `chemicals module <https://pypi.org/project/chemicals/>`_.
+
 ChemMW
 ++++++++++++++++++
 

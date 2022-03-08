@@ -1,3 +1,5 @@
+The ``Proteins`` package is an application of the ``ChemMW`` package. The ``Proteins`` object returns the mass of a protein by either parsing a string of a protein sequence, or by parsing a `FASTA-formatted file <https://en.wikipedia.org/wiki/FASTA_format>`_. This is applied in the `Codons module <https://pypi.org/project/codons/>`_ for genome-scale biology and bioengineering. 
+
 Proteins
 ++++++++++++++++++
 

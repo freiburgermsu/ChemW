@@ -1,3 +1,5 @@
+The ``PHREEQdb`` package is an application of the ``ChemMW`` package. The ``PHREEQdb`` package of ``ChemW`` parses a `PHREEQ database <https://www.usgs.gov/software/phreeqc-version-3>`_ via the ``ChemMW`` package and exports a JSON of mineral masses for all of the described minerals in the database. This is pivotally applied to calculate the masses of complex minerals in the PHREEQC databases of the `ROSSpy module <https://pypi.org/project/ROSSpy/>`_ for reverse osmosis research.
+
 PHREEQdb
 ++++++++++++++++++
 

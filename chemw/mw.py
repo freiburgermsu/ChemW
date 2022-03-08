@@ -1,5 +1,7 @@
 from pubchempy import get_compounds
 from chemicals import periodic_table
+from pprint import pprint
+from sigfig import round
 from math import inf
 from glob import glob
 import requests, io
@@ -88,7 +90,7 @@ class ChemMW():
         if (self.final or formula[ch_no] == ':') and not isnumber(formula[ch_no]):
             stoich = 1
         else:
-            while re.search('[0-9\.]', formula[ch_no]): 
+            while re.search('[0-9.]', formula[ch_no]): 
                 if self.verbose:
                     print('later ch', formula[ch_no])
                 stoich += formula[ch_no]
@@ -116,7 +118,7 @@ class ChemMW():
     def _significant_digits(self, mass):
         mass_sigfigs = len(re.sub('\.', '', str(mass)))
         self.sigfigs = min(mass_sigfigs, self.sigfigs)
-        return round(mass, self.sigfigs)
+        return round(mass, self.sigfigs, warn = False)
 
     def _group_parsing(self,formula, ch_number):
         self.group_masses = {
@@ -146,7 +148,7 @@ class ChemMW():
                 print('\nch_no2', ch_no2)
                 print('ch_2', ch)
                 print(f'Layer {self.layer} mass: {self.group_masses[self.layer]}')
-            if re.search('[\(\s]', ch):
+            if re.search('[( ]', ch):
                 ch_no2 += 1
                 self.layer += 1
                 self.groups += 1
@@ -201,7 +203,7 @@ class ChemMW():
                 print(f'component {group} mass', self.group_masses[group])
             final_mass += self.group_masses[group]
         if not self.end:
-            if not re.search('[A-Z:\(]', formula[ch_no2+1]):
+            if not re.search('[A-Z:(]', formula[ch_no2+1]):
                 skips, stoich = self._parse_stoich(formula, ch_no2)
             else:
                 stoich = 1
@@ -253,7 +255,7 @@ class ChemMW():
                 if ch_number+1 != len(formula)-1:
                     if re.search('[0-9]', formula[ch_number+2]):
                         skips, stoich = self._parse_stoich(formula, ch_number+2)
-                    elif re.search('[A-Z\(:]', formula[ch_number+2]):
+                    elif re.search('[A-Z(:]', formula[ch_number+2]):
                         stoich = 1
                     elif formula[ch_number+2] == '.':
                         skips, stoich = self._parse_stoich(formula, ch_number+2)
@@ -382,7 +384,6 @@ class ChemMW():
                 raise ValueError(f'The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
         
         self.groups = self.layer = self.skip_characters = self.raw_mw = self.mw = 0 
-        self.sigfigs = inf
         self.formula = formula
         formula = re.sub('[_]', '', formula)
         self.element_masses = {}
@@ -391,7 +392,7 @@ class ChemMW():
         self.final = False
         for ch_number in range(len(formula)):
             ch = formula[ch_number]
-#             if re.search('[\(:]', ch):
+#             if re.search('[(:]', ch):
 #                 self.skip_characters = 0
             if self.skip_characters > 0:
                 self.skip_characters -= 1
@@ -416,7 +417,7 @@ class ChemMW():
                 self.skip_characters, mass = self._element_parsing(formula, ch_number)
                 self.raw_mw += mass
 
-        self.mw = round(self.raw_mw, self.sigfigs)
+        self.mw = round(self.raw_mw, self.sigfigs, warn = False)
         if self.printing:
             if common_name is not None:
                 print('{}({}) --- MW (amu): {}'.format(common_name, formula, self.mw))
@@ -461,8 +462,8 @@ class Proteins():
                 mass = self.amino_acid_masses.get(amino_acid)
                 self.raw_protein_mass += mass
                 self.chem_mw._significant_digits(mass)
-                
-            return self.chem_mw._significant_digits(self.raw_protein_mass)
+            print(type(round(self.raw_protein_mass, self.chem_mw.sigfigs, spacing=3, spacer=',')))
+            return round(self.raw_protein_mass, self.chem_mw.sigfigs, spacing=3, spacer=',')
                 
         if fasta_path is not None:
             with open(fasta_path) as input:
@@ -474,13 +475,19 @@ class Proteins():
             remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
         
         self.raw_protein_mass = 0
-        self.sigfigs = inf
+        first = True
         if fasta_path or fasta_link:
             self.fasta_protein_masses = {}
+            protein = ''
             for line in self.fasta_lines:
                 if not re.search('>', line):
                     line = line.rstrip()
-                    self.fasta_protein_masses[line] = calc_protein_mass(line)
+                    protein += line
+                else:
+                    if not first:
+                        self.fasta_protein_masses[protein] = calc_protein_mass(protein)
+                    protein = ''
+                    first= False
         elif remainder == '' or remainder == '*':    
             self.protein_mass = calc_protein_mass(protein_sequence)
         elif re.search('(\-)+(\*)?', remainder):
@@ -493,6 +500,7 @@ class Proteins():
         else:
             raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
             
+        pprint(self.fasta_protein_masses)
         if fasta_path or fasta_link:
             if self.printing:
                 for protein in self.fasta_protein_masses:
@@ -598,7 +606,7 @@ class PHREEQdb():
         
     def process(self,db_path):
         # load the database
-        self.db_name = re.search('([A-Za-z0-9_\.]+(?=\.dat))', db_path).group()
+        self.db_name = re.search('([A-Za-z0-9_.]+(?=\.dat))', db_path).group()
         self.db = pandas.read_table(db_path, sep='\n')
         self._database_parsing()
 
