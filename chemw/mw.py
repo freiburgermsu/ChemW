@@ -417,7 +417,7 @@ class ChemMW():
                 self.skip_characters, mass = self._element_parsing(formula, ch_number)
                 self.raw_mw += mass
 
-        self.mw = round(self.raw_mw, self.sigfigs, warn = False)
+        self.mw = round(str(self.raw_mw), self.sigfigs, warn = False)
         if self.printing:
             if common_name is not None:
                 print('{}({}) --- MW (amu): {}'.format(common_name, formula, self.mw))
@@ -462,8 +462,7 @@ class Proteins():
                 mass = self.amino_acid_masses.get(amino_acid)
                 self.raw_protein_mass += mass
                 self.chem_mw._significant_digits(mass)
-            print(type(round(self.raw_protein_mass, self.chem_mw.sigfigs, spacing=3, spacer=',')))
-            return round(self.raw_protein_mass, self.chem_mw.sigfigs, spacing=3, spacer=',')
+            return round(str(self.raw_protein_mass), self.chem_mw.sigfigs, spacing=3, spacer=',')
                 
         if fasta_path is not None:
             with open(fasta_path) as input:
@@ -500,7 +499,6 @@ class Proteins():
         else:
             raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
             
-        pprint(self.fasta_protein_masses)
         if fasta_path or fasta_link:
             if self.printing:
                 for protein in self.fasta_protein_masses:
@@ -627,7 +625,7 @@ class PHREEQdb():
             
             database_json['minerals'][phase] = {}
             database_json['minerals'][phase]['formula'] = formula
-            database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
+            database_json['minerals'][phase]['mass'] = self.chem_mw.mass(str(formula))
 
         # export the JSON files
         with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
