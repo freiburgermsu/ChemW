@@ -1,4 +1,4 @@
-The ``ChemMW`` package of ``ChemW`` parses a chemical formula string -- which can consist of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula. The significant digits of the reported MW matches the lowest significant digits from the set of elements that constitute the chemical formula, where the elemental masses are the most precise contemporary measurements of pure elements, per the `chemicals module <https://pypi.org/project/chemicals/>`_.
+The ``ChemMW`` package of ``ChemW`` parses a chemical formula string -- which can consist of any combination of elements and decimal stoichiometry -- and precisely calculates the MW of the chemical formula. The significant digits of the reported MW matches the lowest significant digits from the set of elements that constitute the chemical formula, where the elemental masses are the most precise contemporary measurements of pure elements, per the `chemicals module <https://pypi.org/project/chemicals/>`_. This approach offers 1-2 more significant digits than `PubChemPy <https://pypi.org/project/PubChemPy/>`_).
 
 ChemMW
 ++++++++++++++++++
@@ -51,7 +51,8 @@ Accessible content
 ++++++++++++++++++++++++++
 The ``ChemMW`` object retains numerous components that are accessible to the user: 
 
-- *mw* & *raw_mw* ``float``: The MW of the parameterized chemical formula with and without the proper significant digits, respectively.
+- *mw* ``str``: The MW of the parameterized chemical formula with the proper significant digits, which should be used for printing and storing a calculated mass.
+- *raw_mw* ``float``: The MW of the parameterized chemical formula without consideration of the significant digits, which should be used for calculations.
 - *proportions* ``dict``: The ratio of elements in the chemical formula. This loses accuracy with the grouped elements, and is being improved.
 - *formula* ``str``: The original chemical formula as a string.
 - *groups* ``int``: A numerical counter for the quantity of chemical groups that are 

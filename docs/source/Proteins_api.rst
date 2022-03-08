@@ -41,7 +41,8 @@ Accessible content
 ++++++++++++++++++++++++++
 The ``Proteins`` object retains numerous components that are accessible to the user: 
 
-- *protein_mass* & *raw_protein_mass* ``float``: The protein mass that is adjusted and unadjusted for the appropriate number of significant digits.
+- *protein_mass* ``str``: The protein mass with the appropriate quantity of significant digits, which should be used for printing and storing the mass value.
+- *raw_protein_mass* ``float``: The protein mass without consideration of significant digits, which should be used for calculations.
 - *fasta_protein_masses* ``dict``: A dictionary of each sequence from processing a FASTA file, where the value is the corresponding sequence's mass.
 - *amino_acid_masses* ``dict``: A dictionary of all natural amino acids, and their masses to the appropriate number of significant digits.
 - *fasta_lines* ``list``: The raw list of lines that constitute the loaded FASTA file, which can be used for post-processing.

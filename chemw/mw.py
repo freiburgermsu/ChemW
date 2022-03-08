@@ -383,7 +383,8 @@ class ChemMW():
             except:
                 raise ValueError(f'The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
         
-        self.groups = self.layer = self.skip_characters = self.raw_mw = self.mw = 0 
+        self.groups = self.layer = self.skip_characters = self.raw_mw = 0
+        self.mw = ''
         self.formula = formula
         formula = re.sub('[_]', '', formula)
         self.element_masses = {}
@@ -462,8 +463,9 @@ class Proteins():
                 mass = self.amino_acid_masses.get(amino_acid)
                 self.raw_protein_mass += mass
                 self.chem_mw._significant_digits(mass)
-            return round(str(self.raw_protein_mass), self.chem_mw.sigfigs, spacing=3, spacer=',')
-                
+            return round(str(self.raw_protein_mass), self.chem_mw.sigfigs)
+               
+        self.fasta = []
         if fasta_path is not None:
             with open(fasta_path) as input:
                 self.fasta_lines = input.readlines()   
@@ -474,19 +476,20 @@ class Proteins():
             remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
         
         self.raw_protein_mass = 0
-        first = True
         if fasta_path or fasta_link:
             self.fasta_protein_masses = {}
             protein = ''
             for line in self.fasta_lines:
-                if not re.search('>', line):
+                if '>' not in line:
                     line = line.rstrip()
                     protein += line
-                else:
-                    if not first:
-                        self.fasta_protein_masses[protein] = calc_protein_mass(protein)
+                elif '>' in line:
+                    self.fasta_protein_masses[protein] = calc_protein_mass(protein)
                     protein = ''
-                    first= False
+                    
+            self.fasta_protein_masses[protein] = calc_protein_mass(protein)
+            if '' in self.fasta_protein_masses:
+                self.fasta_protein_masses.pop('')
         elif remainder == '' or remainder == '*':    
             self.protein_mass = calc_protein_mass(protein_sequence)
         elif re.search('(\-)+(\*)?', remainder):
@@ -495,6 +498,8 @@ class Proteins():
             if self.printing:
                 string = ' - '.join(['>Protein', f'{len(amino_acids)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
+                self.fasta.append(string)
+            self.fasta = '\n'.join(self.fasta)
             return self.protein_mass
         else:
             raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
@@ -504,13 +509,15 @@ class Proteins():
                 for protein in self.fasta_protein_masses:
                     string = ' - '.join(['>Protein', f'{len(protein)}_residues', f'{self.fasta_protein_masses[protein]}_amu']) + f'\n{protein}'
                     print(string)
-            
+                    self.fasta.append(string)
+            self.fasta = '\n'.join(self.fasta)
             return self.fasta_protein_masses                
         else:
             if self.printing:
                 string = ' - '.join(['>Protein', f'{len(protein_sequence)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
-            
+                self.fasta.append(string)    
+            self.fasta = '\n'.join(self.fasta)
             return self.protein_mass
         
 class PHREEQdb():
@@ -625,7 +632,7 @@ class PHREEQdb():
             
             database_json['minerals'][phase] = {}
             database_json['minerals'][phase]['formula'] = formula
-            database_json['minerals'][phase]['mass'] = self.chem_mw.mass(str(formula))
+            database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
 
         # export the JSON files
         with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
