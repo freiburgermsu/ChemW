@@ -43,6 +43,9 @@ The parameterized data is fitted to the Hill equation, with the following argume
                                                             
 - *common_name* ``str``: parameterizes the common name of the chemical for which the MW is desired, as it is recognized by `Pubchem <https://pubchem.ncbi.nlm.nih.gov>`_: e.g. ``'water'``, ``'acetone'``, ``'toluene'``, ``'glucose'``, ``'aspirin'``, ``'hydrochloric acid'``, ``"alanine"``, ``"glutamine"``, ``"phenylalanine"``, ``"tryptophan"``, et cetera.
 
+ .. note::
+    Common names that begin with a lower-case letter can also be parameterized as the formula, which efficiently enables the positional parameterization of common names.
+
 **Returns** *mw* ``float``: The mass of the parameterized chemical to the appropriate significant digitsthat are alloted by those of the elemental masses.
 
 

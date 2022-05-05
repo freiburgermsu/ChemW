@@ -377,8 +377,9 @@ class ChemMW():
              formula: str = None,   # The molecular formula of the chemical whose mass will be calculated
              common_name: str = None  # The common name of the chemical, as they are recognized by PubChem
              ):  
-        if re.search('[a-z]',str(formula[0])):
-            common_name = formula
+        if formula is not None:
+            if re.search('[a-z]',str(formula[0])):
+                common_name = formula
         if common_name is not None:
             try:
                 formula = get_compounds(common_name, 'name')[0].molecular_formula

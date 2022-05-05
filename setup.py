@@ -12,7 +12,7 @@ setup(
 	'test':['databases/*', 'protein_sequence.fasta'],
     'chemw':['amino_acids_masses.json'],
   },
-  version = '0.3.2',
+  version = '0.3.3',
   license = 'MIT',
   description = "Calculates the Molecular Weight, to the appropriate significant digits, from a string of an arbitrary chemical formula, a protein sequence of one- or three-letter codes, or chemical common names that are recognized by PubChem.", 
   long_description = readme,
