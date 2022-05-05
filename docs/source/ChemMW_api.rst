@@ -55,5 +55,6 @@ The ``ChemMW`` object retains numerous components that are accessible to the use
 - *raw_mw* ``float``: The MW of the parameterized chemical formula without consideration of the significant digits, which should be used for calculations.
 - *proportions* ``dict``: The ratio of elements in the chemical formula. This loses accuracy with the grouped elements, and is being improved.
 - *formula* ``str``: The original chemical formula as a string.
+- *atoms* ``int``: The qantity of atoms that are defined in the chemical formula.
 - *groups* ``int``: A numerical counter for the quantity of chemical groups that are 
 - *group_masses* ``dict``: A dictionary for the masses of each nesting level in a molecule.

@@ -1,11 +1,11 @@
 from pubchempy import get_compounds
 from chemicals import periodic_table
 from pprint import pprint
-from sigfig import round
 from math import inf
 from glob import glob
 import requests, io
 import pandas
+import sigfig 
 import json, re, os
 
 
@@ -105,7 +105,7 @@ class ChemMW():
         if self.verbose:
             print('stoich',stoich)
         stoich = float(stoich)
-        if re.search('(\.0$)', str(stoich)):
+        if re.search(r'(\.0$)', str(stoich)):
             stoich = int(stoich)
         return skips, stoich
     
@@ -116,9 +116,9 @@ class ChemMW():
             self.end = True
             
     def _significant_digits(self, mass):
-        mass_sigfigs = len(re.sub('\.', '', str(mass)))
+        mass_sigfigs = len(re.sub(r'\.', '', str(mass)))
         self.sigfigs = min(mass_sigfigs, self.sigfigs)
-        return round(mass, self.sigfigs, warn = False)
+        return sigfig.round(mass, self.sigfigs, warn = False)
 
     def _group_parsing(self,formula, ch_number):
         self.group_masses = {
@@ -377,13 +377,15 @@ class ChemMW():
              formula: str = None,   # The molecular formula of the chemical whose mass will be calculated
              common_name: str = None  # The common name of the chemical, as they are recognized by PubChem
              ):  
+        if re.search('[a-z]',str(formula[0])):
+            common_name = formula
         if common_name is not None:
             try:
                 formula = get_compounds(common_name, 'name')[0].molecular_formula
             except:
                 raise ValueError(f'The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
         
-        self.groups = self.layer = self.skip_characters = self.raw_mw = 0
+        self.groups = self.layer = self.skip_characters = self.raw_mw = self.atoms = 0
         self.mw = ''
         self.formula = formula
         formula = re.sub('[_]', '', formula)
@@ -418,7 +420,7 @@ class ChemMW():
                 self.skip_characters, mass = self._element_parsing(formula, ch_number)
                 self.raw_mw += mass
 
-        self.mw = round(str(self.raw_mw), self.sigfigs, warn = False)
+        self.mw = sigfig.round(str(self.raw_mw), self.sigfigs, warn = False)
         if self.printing:
             if common_name is not None:
                 print('{}({}) --- MW (amu): {}'.format(common_name, formula, self.mw))
@@ -426,10 +428,12 @@ class ChemMW():
                 print('{} --- MW (amu): {}'.format(formula, self.mw))
             
         # normalize the elemental proportions
+        
         self.proportions = {}
         total_mass = sum([self.element_masses[element] for element in self.element_masses])
         for element in self.element_masses:
             self.proportions[element] = self.element_masses[element]/total_mass
+            self.atoms += 1
             
         # reset the class object values
         self._reset()
@@ -445,8 +449,8 @@ class Proteins():
         self.printing = printing
         
         # load amino acid masses, which were previously calculated through ChemMW to expedite computational time
-        masses_path = os.path.join(os.path.dirname(__file__), 'amino_acids_masses.json')
-        self.amino_acid_masses = CaseInsensitiveDict(json.load(open(masses_path)))
+        with open(os.path.join(os.path.dirname(__file__), 'amino_acids_masses.json')) as aa_masses:
+            self.amino_acid_masses = CaseInsensitiveDict(json.load(aa_masses))
         
     def mass(self,
                 protein_sequence: str = None, # the sequence of either one_letter or hyphenated three_letter amino acid sequences
@@ -456,14 +460,14 @@ class Proteins():
         def calc_protein_mass(amino_acids):
             self.raw_protein_mass = 0
             for amino_acid in amino_acids:
-                if not re.search('[a-z]',amino_acid, flags = re.IGNORECASE):
+                if not re.search('[A-Za-z]',amino_acid):
                     if amino_acid != '*':
                         print(f'--> ERROR: An unexpected character {amino_acid} was encountered in the protein sequence {amino_acids}.')
                     continue
                 mass = self.amino_acid_masses.get(amino_acid)
                 self.raw_protein_mass += mass
                 self.chem_mw._significant_digits(mass)
-            return round(str(self.raw_protein_mass), self.chem_mw.sigfigs)
+            return sigfig.round(str(self.raw_protein_mass), self.chem_mw.sigfigs, warn = False)
                
         self.fasta = []
         if fasta_path is not None:
@@ -473,7 +477,7 @@ class Proteins():
             sequence = requests.get(fasta_link).content
             self.fasta_lines = io.StringIO(sequence.decode('utf-8')).readlines()
         else:
-            remainder = re.sub('(\w)', '', protein_sequence, flags = re.IGNORECASE)
+            remainder = re.sub(r'(\w)', '', protein_sequence, flags = re.IGNORECASE)
         
         self.raw_protein_mass = 0
         if fasta_path or fasta_link:
@@ -492,7 +496,7 @@ class Proteins():
                 self.fasta_protein_masses.pop('')
         elif remainder == '' or remainder == '*':    
             self.protein_mass = calc_protein_mass(protein_sequence)
-        elif re.search('(\-)+(\*)?', remainder):
+        elif re.search(r'(-)+(\*)?', remainder):
             amino_acids = protein_sequence.split('-')
             self.protein_mass = calc_protein_mass(amino_acids)
             if self.printing:
@@ -566,12 +570,12 @@ class PHREEQdb():
                         index += 1
                         continue
 
-                    if re.search('(^\w+\s*\d*$)',self.db.at[index, 'content']):
+                    if re.search(r'(^\w+\s*\d*$)',self.db.at[index, 'content']):
                         reactants = self.db.at[index+1, 'content'].split(' = ')[0]
                         if all('#' not in entity for entity in reactants):
                             formula = reactants.split('+')[0].strip()
                             name = self.db.at[index, 'content']
-                            name = re.sub('(\s+\d*)', '', name)
+                            name = re.sub(r'(\s+\d*)', '', name)
                             minerals_rows.append([name, formula])
                     index+= 1
 
@@ -611,7 +615,7 @@ class PHREEQdb():
         
     def process(self,db_path):
         # load the database
-        self.db_name = re.search('([A-Za-z0-9_.]+(?=\.dat))', db_path).group()
+        self.db_name = re.search(r'([A-Za-z0-9_.]+(?=\.dat))', db_path).group()
         self.db = pandas.read_table(db_path, sep='\n')
         self._database_parsing()
 
