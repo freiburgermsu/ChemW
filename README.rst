@@ -1,7 +1,7 @@
 Calculating the Molecular Weight from a Chemical Formula, Common Name, or Protein Sequence
 -------------------------------------------------------------------------------------------------------------------------
 
-|PyPI version| |Actions Status| |Downloads| |License|
+|PyPI version| |Actions Status| |docs| |Downloads| |License|
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/chemw.svg?logo=PyPI&logoColor=brightgreen
    :target: https://pypi.org/project/chemw/
@@ -18,6 +18,10 @@ Calculating the Molecular Weight from a Chemical Formula, Common Name, or Protei
 .. |Downloads| image:: https://pepy.tech/badge/chemw
    :target: https://pepy.tech/project/chemw
    :alt: Downloads
+   
+.. |docs| image:: https://readthedocs.org/projects/chemw/badge/?version=latest
+   :target: https://chemw.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 
 The ``ChemW`` library contains three packages, each with a distinct use-case, which are detailed in the following sections.
