@@ -1,5 +1,6 @@
 from pubchempy import get_compounds
 from chemicals import periodic_table
+from warnings import warn
 from pprint import pprint
 from math import inf
 from glob import glob
@@ -222,10 +223,20 @@ class ChemMW():
             print('skip_characters_group', skip_characters)
             print('\n------End Group------\n')
         return skip_characters, final_mass
+    
+    def _element_check(self,element):
+        # catch and ignore erroneous elements
+        if element not in elemental_masses: 
+            warn(f'The character {element} is not an element.')
+            return False
+        return True
 
     def _element_parsing(self,formula, ch_number):
         stoich = skips = 0
         # set_trace()
+        if formula[ch_number] in ['*', "", None]:
+            warn(f'The character {formula[ch_number]} is not defined.')
+            return 0,0
         if re.search('[ +)]',formula[ch_number]):
             skip_characters = 0
             mass = 0
@@ -239,6 +250,8 @@ class ChemMW():
                 element = formula[ch_number]
                 stoich = 1
                 
+                if not self._element_check(element):
+                    return 0,0
                 self._significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 # track the elemental proportion
@@ -251,7 +264,10 @@ class ChemMW():
                 return 0, mass
 
             elif re.search('[a-z]', formula[ch_number+1]):
-                element = formula[ch_number] + formula[ch_number+1]          
+                element = formula[ch_number] + formula[ch_number+1]   
+                if not self._element_check(element):
+                    return 0,0
+                
                 if ch_number+1 != len(formula)-1:
                     if re.search('[0-9]', formula[ch_number+2]):
                         skips, stoich = self._parse_stoich(formula, ch_number+2)
@@ -264,7 +280,7 @@ class ChemMW():
                         stoich = 1
                         skips += len(' ')
                     else:
-                        print('--> ERROR: The mineral formula {} may be unpredictable.'.format(formula))
+                        warn(f'The mineral formula {formula} may be unpredictable.')
                 else:
                     stoich = 1
 
@@ -284,6 +300,8 @@ class ChemMW():
                 return skip_characters, mass
 
             elif re.search('[0-9]', formula[ch_number+1]):
+                if not self._element_check(element):
+                    return 0,0
                 skips, stoich = self._parse_stoich(formula, ch_number+1)
                 self._significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
@@ -299,6 +317,8 @@ class ChemMW():
                 return skips, mass
 
             elif formula[ch_number+1] == '.':
+                if not self._element_check(element):
+                    return 0,0
                 skips, stoich = self._parse_stoich(formula, ch_number+1)
                 self._significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
@@ -315,6 +335,8 @@ class ChemMW():
                 return skip_characters, mass
 
             elif re.search('[A-Z():+ ]', formula[ch_number+1]):
+                if not self._element_check(element):
+                    return 0,0
                 self._significant_digits(elemental_masses[element])
                 mass = elemental_masses[element] 
                 
@@ -328,6 +350,8 @@ class ChemMW():
                     print('here4', stoich, elemental_masses[element])
                     print('skip_characters_mineral_formula6', 0)
                 return 0, mass
+            else:
+                warn(f'ElementError: The formula {formula} character {formula[ch_number]} is not defined and will be skipped.')
 
         elif re.search(':',formula[ch_number]):
             skips = space = back_space = 0
@@ -353,7 +377,7 @@ class ChemMW():
                 
             else:
                 if self.verbose:
-                    print(f'--> ERROR: The {formula} formula is not predictable.')
+                    warn(f'The {formula} formula is not predictable.')
                 return 0, 0
 
         elif formula[ch_number-1] == '.':
@@ -377,10 +401,12 @@ class ChemMW():
              formula: str = None,   # The molecular formula of the chemical whose mass will be calculated
              common_name: str = None  # The common name of the chemical, as they are recognized by PubChem
              ):  
-        if formula is not None:
+        if formula:
             if re.search('[a-z]',str(formula[0])):
                 common_name = formula
-        if common_name is not None:
+        if formula in ['*', '', None]:
+            return None
+        if common_name:
             try:
                 formula = get_compounds(common_name, 'name')[0].molecular_formula
             except:
@@ -626,6 +652,7 @@ class PHREEQdb():
             database_json['elements'][element['elements']] = {'charge_specie': element['alk'], 'gfw_formula':element['gfw_formula'], 'element_gfw':element['element_gfw']}
 
         # add minerals to the JSON
+        minerals = set()
         for index, mineral in self.minerals.iterrows():
             phase = mineral['phases']                     
             if re.search('phases|phase', phase, flags = re.IGNORECASE):
@@ -634,11 +661,15 @@ class PHREEQdb():
             # calculate the chemical masses for each mineral 
             formula = mineral['formula']
             formula = re.sub('Cyanide|Cyanate', 'CN', formula)   
+            minerals.add(formula)
             
             database_json['minerals'][phase] = {}
             database_json['minerals'][phase]['formula'] = formula
             database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
 
         # export the JSON files
+        print(self.db_name, f': {len(minerals)} minerals')
         with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
             json.dump(database_json, output, indent = 4)
+            
+        return minerals
