@@ -119,6 +119,11 @@
             "charge_specie": "1.0",
             "gfw_formula": "H2Sg",
             "element_gfw": "34.08"
+        },
+        "null": {
+            "charge_specie": null,
+            "gfw_formula": null,
+            "element_gfw": null
         }
     },
     "minerals": {

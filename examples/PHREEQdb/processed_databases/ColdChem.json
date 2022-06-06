@@ -59,6 +59,11 @@
             "charge_specie": "0",
             "gfw_formula": "SO4",
             "element_gfw": null
+        },
+        "null": {
+            "charge_specie": null,
+            "gfw_formula": null,
+            "element_gfw": null
         }
     },
     "minerals": {

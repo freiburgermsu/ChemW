@@ -1,5 +1,10 @@
 {
     "elements": {
+        "E": {
+            "charge_specie": "0",
+            "gfw_formula": "0",
+            "element_gfw": "0.0"
+        },
         "H": {
             "charge_specie": "-1",
             "gfw_formula": "H",
@@ -154,6 +159,11 @@
             "charge_specie": "0.0",
             "gfw_formula": "50.05",
             "element_gfw": "50.05"
+        },
+        "null": {
+            "charge_specie": null,
+            "gfw_formula": null,
+            "element_gfw": null
         }
     },
     "minerals": {

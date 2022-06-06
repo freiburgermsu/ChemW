@@ -404,7 +404,7 @@ class ChemMW():
         if formula:
             if re.search('[a-z]',str(formula[0])):
                 common_name = formula
-        if formula in ['*', '', None]:
+        if formula in ['*', '']:
             return None
         if common_name:
             try:
@@ -643,7 +643,9 @@ class PHREEQdb():
     def process(self,db_path):
         # load the database
         self.db_name = re.search(r'([A-Za-z0-9_.]+(?=\.dat))', db_path).group()
-        self.db = pandas.read_table(db_path, sep='\n')
+        with open(db_path, 'r', encoding="utf8") as db:
+            db = db.readlines()
+            self.db = pandas.DataFrame(db)
         self._database_parsing()
 
         # add elements to the JSON
