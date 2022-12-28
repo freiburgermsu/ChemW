@@ -34,95 +34,104 @@ class CaseInsensitiveDict(dict):        # sourced from https://stackoverflow.com
 
     def __init__(self, *args, **kwargs):
         super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
-        self._convert_keys()
+        CaseInsensitiveDict._convert_keys()
         
     def __getitem__(self, key):
-        return super(CaseInsensitiveDict, self).__getitem__(self.__class__._k(key))
+        return super(CaseInsensitiveDict, self).__getitem__(__class__._k(key))
     
     def __setitem__(self, key, value):
-        super(CaseInsensitiveDict, self).__setitem__(self.__class__._k(key), value)
+        super(CaseInsensitiveDict, self).__setitem__(__class__._k(key), value)
         
     def __delitem__(self, key):
-        return super(CaseInsensitiveDict, self).__delitem__(self.__class__._k(key))
+        return super(CaseInsensitiveDict, self).__delitem__(__class__._k(key))
     
     def __contains__(self, key):
-        return super(CaseInsensitiveDict, self).__contains__(self.__class__._k(key))
+        return super(CaseInsensitiveDict, self).__contains__(__class__._k(key))
     
     def has_key(self, key):
-        return super(CaseInsensitiveDict, self).has_key(self.__class__._k(key))
+        return super(CaseInsensitiveDict, self).has_key(__class__._k(key))
     
     def pop(self, key, *args, **kwargs):
-        return super(CaseInsensitiveDict, self).pop(self.__class__._k(key), *args, **kwargs)
+        return super(CaseInsensitiveDict, self).pop(__class__._k(key), *args, **kwargs)
     
     def get(self, key, *args, **kwargs):
-        return super(CaseInsensitiveDict, self).get(self.__class__._k(key), *args, **kwargs)
+        return super(CaseInsensitiveDict, self).get(__class__._k(key), *args, **kwargs)
     
     def setdefault(self, key, *args, **kwargs):
-        return super(CaseInsensitiveDict, self).setdefault(self.__class__._k(key), *args, **kwargs)
+        return super(CaseInsensitiveDict, self).setdefault(__class__._k(key), *args, **kwargs)
     
     def update(self, E=None, **F):
-        super(CaseInsensitiveDict, self).update(self.__class__(E))
-        super(CaseInsensitiveDict, self).update(self.__class__(**F))
+        super(CaseInsensitiveDict, self).update(__class__(E))
+        super(CaseInsensitiveDict, self).update(__class__(**F))
         
     def _convert_keys(self):
-        for k in list(self.keys()):
+        for k in list(keys()):
             v = super(CaseInsensitiveDict, self).pop(k)
-            self.__setitem__(k, v)
+            CaseInsensitiveDict.__setitem__(k, v)
+
+def _final(formula,ch_no):
+    if ch_no+1 == len(formula)-1:
+        final = True
+    if ch_no >= len(formula)-1:
+        end = True
+    return final, end
+
+def _significant_digits(mass, sigfigs=None):
+    sigfigs = sigfigs or inf
+    mass_sigfigs = len(re.sub(r'\.', '', str(mass)))
+    sigfigs = min(mass_sigfigs, sigfigs)
+    return sigfig.round(mass, sigfigs, warn=False)
+
+def _element_check(element):
+    # catch and ignore erroneous elements
+    if element not in elemental_masses:
+        warn(f'The character {element} is not an element.')
+        return False
+    return True
+
+def _parse_stoich(formula, ch_number, verbose):
+    ch_no = ch_number  # ch_number is the first digit of the stoich float
+    stoich = ''
+    skips = 0
+    if verbose:
+        print('first ch', formula[ch_no])
+    if formula[ch_no] == '.':
+        stoich = '0.'
+        ch_no += 1
+        if re.search('[a-z]', formula[ch_no-2]):
+            skips -= 1
+    final, end = _final(formula, ch_no)
+    if (final or formula[ch_no] == ':') and not isnumber(formula[ch_no]):
+        stoich = 1
+    else:
+        while re.search('[0-9.]', formula[ch_no]):
+            if verbose:
+                print('later ch', formula[ch_no])
+            stoich += formula[ch_no]
+            if ch_no == len(formula)-1:
+                final = True
+                break
+            ch_no += 1
+
+    skips += ch_no - ch_number
+    if stoich == '':
+        stoich = 1
+    if verbose:
+        print('stoich',stoich)
+    stoich = float(stoich)
+    if re.search(r'(\.0$)', str(stoich)):
+        stoich = int(stoich)
+    return skips, stoich
 
         
-class ChemMW():
-    def __init__(self, verbose = False, printing = True):
-        self.verbose = verbose
-        self.printing = printing
-        self.final = self.end = False
-        self.sigfigs = inf
+class ChemMW:
 
-    def _parse_stoich(self,formula, ch_number):
-        ch_no = ch_number  # ch_number is the first digit of the stoich float
-        stoich = ''
-        skips = 0
-        if self.verbose:
-            print('first ch', formula[ch_no])
-        if formula[ch_no] == '.':
-            stoich = '0.'
-            ch_no += 1
-            if re.search('[a-z]', formula[ch_no-2]):
-                skips -= 1
-        if (self.final or formula[ch_no] == ':') and not isnumber(formula[ch_no]):
-            stoich = 1
-        else:
-            while re.search('[0-9.]', formula[ch_no]): 
-                if self.verbose:
-                    print('later ch', formula[ch_no])
-                stoich += formula[ch_no]
-                if ch_no == len(formula)-1:
-                    self.final = True
-                    break
-                ch_no += 1
+    def __init__(self):
+        pass
 
-        skips += ch_no - ch_number
-        if stoich == '':
-            stoich = 1
-        if self.verbose:
-            print('stoich',stoich)
-        stoich = float(stoich)
-        if re.search(r'(\.0$)', str(stoich)):
-            stoich = int(stoich)
-        return skips, stoich
-    
-    def _final(self,formula,ch_no):
-        if ch_no+1 == len(formula)-1:
-            self.final = True
-        if ch_no >= len(formula)-1:
-            self.end = True
-            
-    def _significant_digits(self, mass):
-        mass_sigfigs = len(re.sub(r'\.', '', str(mass)))
-        self.sigfigs = min(mass_sigfigs, self.sigfigs)
-        return sigfig.round(mass, self.sigfigs, warn = False)
-
-    def _group_parsing(self,formula, ch_number):
-        self.group_masses = {
+    @staticmethod
+    def _group_parsing(formula, ch_number, groups, layer, verbose):
+        group_masses = {
             1: 0,
             2: 0,
             3: 0,
@@ -130,36 +139,36 @@ class ChemMW():
             5: 0,
             6: 0
         }
-        self.layer += 1
-        self.groups += 1
+        layer += 1
+        groups += 1
         ch_no2 = ch_number+1
         skip_characters = final_mass = 0
-        if self.verbose:
+        if verbose:
             print('\n------Group parsing------')
-        while self.layer > 0:
+        while layer > 0:
             ch = formula[ch_no2]
             if skip_characters > 0:
-                if self.verbose:
+                if verbose:
                     print('\nch_no2', ch_no2)
                     print('skipping_group', ch)
                 skip_characters -= 1
                 ch_no2 += 1
                 continue
-            if self.verbose:
+            if verbose:
                 print('\nch_no2', ch_no2)
                 print('ch_2', ch)
-                print(f'Layer {self.layer} mass: {self.group_masses[self.layer]}')
+                print(f'Layer {layer} mass: {group_masses[layer]}')
             if re.search('[( ]', ch):
                 ch_no2 += 1
-                self.layer += 1
-                self.groups += 1
-                self._final(formula,ch_no2)
-                
+                layer += 1
+                groups += 1
+                final, end = _final(formula,ch_no2)
+
                 # parse the new sub mineral
-                skips, mass = self._element_parsing(formula, ch_no2)
-                self.group_masses[self.layer] += mass
+                skips, mass = ChemMW._element_parsing(formula, ch_no2)
+                group_masses[layer] += mass
                 skip_characters += skips
-                if self.verbose:
+                if verbose:
                     print('here1')
                     print('skips', skips)
                     print('skip_characters_group', skip_characters)
@@ -167,71 +176,65 @@ class ChemMW():
             elif re.search('[):]', ch):
                 ch_no2 += 1
                 stoich = 1
-                self._final(formula,ch_no2)
+                final, end = _final(formula,ch_no2)
                 
-                if not self.end:
-                    skips, stoich = self._parse_stoich(formula, ch_no2)
-                    if self.verbose:
+                if not end:
+                    skips, stoich = _parse_stoich(formula, ch_no2)
+                    if verbose:
                         print('skips', skips)
                     skip_characters += skips 
-                if not self.final:
-                    self.group_masses[self.layer] *= stoich
-                if self.verbose:
+                if not final:
+                    group_masses[layer] *= stoich
+                if verbose:
                     print('here2')
                     print('skip_characters_group', skip_characters)
 #                 if re.search('\)', ch):
-                self.layer -= 1
+                layer -= 1
             else:
                 # set_trace()
-                skips, mass = self._element_parsing(formula, ch_no2)
-                self.group_masses[self.layer] += mass
+                skips, mass = ChemMW._element_parsing(formula, ch_no2)
+                group_masses[layer] += mass
                 skip_characters += skips
-                if self.verbose:
+                if verbose:
                     print('here3')
                     print('skips', skips)
                     print('skip_characters_group', skip_characters)
                 ch_no2 += 1
                
             if ch_no2 >= len(formula)-1:
-                self.end = True
-                self.layer -= 1
+                end = True
+                layer -= 1
                 stoich = 1
 #                 print(f'--> ERROR: The final character of {formula} is {formula[-1]}') 
         
         # calculate the final mass of the nested group
-        for group in self.group_masses:
-            if self.verbose:
-                print(f'component {group} mass', self.group_masses[group])
-            final_mass += self.group_masses[group]
-        if not self.end:
+        for group in group_masses:
+            if verbose:
+                print(f'component {group} mass', group_masses[group])
+            final_mass += group_masses[group]
+        if not end:
             if not re.search('[A-Z:(]', formula[ch_no2+1]):
-                skips, stoich = self._parse_stoich(formula, ch_no2)
+                skips, stoich = _parse_stoich(formula, ch_no2)
             else:
                 stoich = 1
         else:
             skip_characters += 1
                 
-        if self.verbose:
+        if verbose:
             print('stoich', stoich)
             print('final_mass', final_mass)
-        if self.group_masses[2] > 0:
+        if group_masses[2] > 0:
             final_mass *= stoich
         
         # calculate the total mass for nested groups 
         skip_characters = ch_no2 - ch_number + skip_characters-1
-        if self.verbose:
+        if verbose:
             print('skip_characters_group', skip_characters)
             print('\n------End Group------\n')
         return skip_characters, final_mass
-    
-    def _element_check(self,element):
-        # catch and ignore erroneous elements
-        if element not in elemental_masses: 
-            warn(f'The character {element} is not an element.')
-            return False
-        return True
 
-    def _element_parsing(self,formula, ch_number):
+    @staticmethod
+    def _element_parsing(formula, ch_number, element_masses, end, verbose):
         stoich = skips = 0
         # set_trace()
         if formula[ch_number] in ['*', "", None]:
@@ -240,41 +243,41 @@ class ChemMW():
         if re.search('[ +)]',formula[ch_number]):
             skip_characters = 0
             mass = 0
-            if self.verbose:
+            if verbose:
                 print('skip_characters_mineral_formula1', skip_characters)
             return skip_characters, mass
         elif re.search('[A-Z]',formula[ch_number]):
-            self._final(formula,ch_number)
+            final, end = _final(formula,ch_number)
             element = formula[ch_number]
-            if self.end:
+            if end:
                 element = formula[ch_number]
                 stoich = 1
                 
-                if not self._element_check(element):
+                if not _element_check(element):
                     return 0,0
-                self._significant_digits(elemental_masses[element])
+                _significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 # track the elemental proportion
-                if element not in self.element_masses:
-                    self.element_masses[element] = mass
+                if element not in element_masses:
+                    element_masses[element] = mass
                 else:
-                    self.element_masses[element] += mass
-                if self.verbose:
+                    element_masses[element] += mass
+                if verbose:
                     print('skip_characters_mineral_formula2', 0)
                 return 0, mass
 
             elif re.search('[a-z]', formula[ch_number+1]):
                 element = formula[ch_number] + formula[ch_number+1]   
-                if not self._element_check(element):
+                if not _element_check(element):
                     return 0,0
                 
                 if ch_number+1 != len(formula)-1:
                     if re.search('[0-9]', formula[ch_number+2]):
-                        skips, stoich = self._parse_stoich(formula, ch_number+2)
+                        skips, stoich = _parse_stoich(formula, ch_number+2)
                     elif re.search('[A-Z(:]', formula[ch_number+2]):
                         stoich = 1
                     elif formula[ch_number+2] == '.':
-                        skips, stoich = self._parse_stoich(formula, ch_number+2)
+                        skips, stoich = _parse_stoich(formula, ch_number+2)
                         skips += len('.')
                     elif formula[ch_number+2] == ' ':
                         stoich = 1
@@ -284,69 +287,69 @@ class ChemMW():
                 else:
                     stoich = 1
 
-                self._significant_digits(elemental_masses[element])
+                _significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 
                 # track the elemental proportion
-                if element not in self.element_masses:
-                    self.element_masses[element] = mass
+                if element not in element_masses:
+                    element_masses[element] = mass
                 else:
-                    self.element_masses[element] += mass
+                    element_masses[element] += mass
 
                 skip_characters = skips + 1
-                if self.verbose:
+                if verbose:
                     print('skip_characters_mineral_formula3', skip_characters)
 
                 return skip_characters, mass
 
             elif re.search('[0-9]', formula[ch_number+1]):
-                if not self._element_check(element):
+                if not _element_check(element):
                     return 0,0
-                skips, stoich = self._parse_stoich(formula, ch_number+1)
-                self._significant_digits(elemental_masses[element])
+                skips, stoich = _parse_stoich(formula, ch_number+1)
+                _significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 
                 # track the elemental proportion
-                if element not in self.element_masses:
-                    self.element_masses[element] = mass
+                if element not in element_masses:
+                    element_masses[element] = mass
                 else:
-                    self.element_masses[element] += mass
+                    element_masses[element] += mass
 
-                if self.verbose:
+                if verbose:
                     print('skip_characters_mineral_formula4', skips)
                 return skips, mass
 
             elif formula[ch_number+1] == '.':
-                if not self._element_check(element):
+                if not _element_check(element):
                     return 0,0
-                skips, stoich = self._parse_stoich(formula, ch_number+1)
-                self._significant_digits(elemental_masses[element])
+                skips, stoich = _parse_stoich(formula, ch_number+1)
+                _significant_digits(elemental_masses[element])
                 mass = stoich * elemental_masses[element] 
                 
                 # track the elemental proportion
-                if element not in self.element_masses:
-                    self.element_masses[element] = mass
+                if element not in element_masses:
+                    element_masses[element] = mass
                 else:
-                    self.element_masses[element] += mass
+                    element_masses[element] += mass
 
                 skip_characters = skips
-                if self.verbose:
+                if verbose:
                     print('skip_characters_mineral_formula5', skip_characters)
                 return skip_characters, mass
 
             elif re.search('[A-Z():+ ]', formula[ch_number+1]):
-                if not self._element_check(element):
+                if not _element_check(element):
                     return 0,0
-                self._significant_digits(elemental_masses[element])
+                _significant_digits(elemental_masses[element])
                 mass = elemental_masses[element] 
                 
                 # track the elemental proportion
-                if element not in self.element_masses:
-                    self.element_masses[element] = mass
+                if element not in element_masses:
+                    element_masses[element] = mass
                 else:
-                    self.element_masses[element] += mass
+                    element_masses[element] += mass
 
-                if self.verbose:
+                if verbose:
                     print('here4', stoich, elemental_masses[element])
                     print('skip_characters_mineral_formula6', 0)
                 return 0, mass
@@ -357,16 +360,16 @@ class ChemMW():
             skips = space = back_space = 0
             stoich = 1
             if re.search('[0-9]', formula[ch_number+1]):
-                skips, stoich = self._parse_stoich(formula, ch_number+1)
+                skips, stoich = _parse_stoich(formula, ch_number+1)
                 
-                if self.verbose:
+                if verbose:
                     print('\npost-: value', formula[ch_number+skips+1])
-                skip_characters, mass = self._group_parsing(formula, ch_number+skips)
+                skip_characters, mass = ChemMW._group_parsing(formula, ch_number+skips, groups)
                 skip_characters += skips
                 group_mass = mass * stoich
-                if self.verbose:
+                if verbose:
                     print('skip_characters_mineral_formula9', skip_characters)
-                    if not self.end:
+                    if not end:
                         print('post-skipping value', formula[ch_number+skip_characters])
                 return skip_characters, group_mass
             
@@ -376,7 +379,7 @@ class ChemMW():
 #             elif re.search('[A-Z]',formula[ch_number+skips+1]):
                 
             else:
-                if self.verbose:
+                if verbose:
                     warn(f'The {formula} formula is not predictable.')
                 return 0, 0
 
@@ -384,23 +387,23 @@ class ChemMW():
             return 0, 0
 
         elif re.search('[0-9]', formula[ch_number]):
-            self._final(formula,ch_number)            
-            if not self.end:
-                skips, stoich = self._parse_stoich(formula, ch_number)
-            if self.verbose:
+            _final(formula,ch_number)            
+            if not end:
+                skips, stoich = _parse_stoich(formula, ch_number)
+            if verbose:
                 print('skip_characters_mineral_formula', skips)
             return skips, stoich
 
-    def _reset(self,):
-        self.groups = self.layer = self.skip_characters = 0
-        self.end = False
-        self.final = False
-        
-
-    def mass(self, 
-             formula: str = None,   # The molecular formula of the chemical whose mass will be calculated
-             common_name: str = None  # The common name of the chemical, as they are recognized by PubChem
-             ):  
+    @staticmethod
+    def mass(formula: str = None,      # The molecular formula of the chemical whose mass will be calculated
+             common_name: str = None,  # The common name of the chemical, as they are recognized by PubChem
+             final:bool = False,
+             end:bool = False,
+             verbose:bool = False,
+             printing:bool = True,
+             sigfigs:float = None
+             ):
+        sigfigs = sigfigs or inf
         if formula:
             if re.search('[a-z]',str(formula[0])):
                 common_name = formula
@@ -412,67 +415,64 @@ class ChemMW():
             except:
                 raise ValueError(f'The {common_name} common name is recognized by PubChem, and cannot be calculated through ChemW.')
         
-        self.groups = self.layer = self.skip_characters = self.raw_mw = self.atoms = 0
-        self.mw = ''
-        self.formula = formula
+        groups = layer = skip_characters = raw_mw = atoms = 0
+        mw = ''
+        formula = formula
         formula = re.sub('[_]', '', formula)
-        self.element_masses = {}
-        if self.verbose:
+        element_masses = {}
+        if verbose:
             print('\n\n\n', formula, '\n', '='*2*len(formula))
-        self.final = False
+        final = False
         for ch_number in range(len(formula)):
             ch = formula[ch_number]
 #             if re.search('[(:]', ch):
-#                 self.skip_characters = 0
-            if self.skip_characters > 0:
-                self.skip_characters -= 1
+#                 skip_characters = 0
+            if skip_characters > 0:
+                skip_characters -= 1
                 if ch_number == len(formula):
-                    self.skip_characters = 0
-                if self.verbose:
-                    print('\nskip_characters', self.skip_characters)
+                    skip_characters = 0
+                if verbose:
+                    print('\nskip_characters', skip_characters)
                     print('skipping_mass', ch)
                 continue
-            if self.verbose:
-                print('\ntotal_mass', self.raw_mw)
+            if verbose:
+                print('\ntotal_mass', raw_mw)
                 print('ch_number', ch_number)
                 print('ch', ch)
 
             if ch_number == len(formula)-1:
-                self.final = True
+                final = True
                 
             if formula[ch_number] == '(':
-                self.skip_characters, mass = self._group_parsing(formula, ch_number)
-                self.raw_mw += mass 
+                skip_characters, mass = ChemMW._group_parsing(formula, ch_number, groups)
+                raw_mw += mass 
             else:
-                self.skip_characters, mass = self._element_parsing(formula, ch_number)
-                self.raw_mw += mass
+                skip_characters, mass = ChemMW._element_parsing(formula, ch_number)
+                raw_mw += mass
 
-        self.mw = sigfig.round(str(self.raw_mw), self.sigfigs, warn = False)
-        if self.printing:
+        mw = sigfig.round(str(raw_mw), sigfigs, warn = False)
+        if printing:
             if common_name is not None:
-                print('{}({}) --- MW (amu): {}'.format(common_name, formula, self.mw))
+                print('{}({}) --- MW (amu): {}'.format(common_name, formula, mw))
             else:
-                print('{} --- MW (amu): {}'.format(formula, self.mw))
+                print('{} --- MW (amu): {}'.format(formula, mw))
             
         # normalize the elemental proportions
         
-        self.proportions = {}
-        total_mass = sum([self.element_masses[element] for element in self.element_masses])
-        for element in self.element_masses:
-            self.proportions[element] = self.element_masses[element]/total_mass
-            self.atoms += 1
+        proportions = {}
+        total_mass = sum([element_masses[element] for element in element_masses])
+        for element in element_masses:
+            proportions[element] = element_masses[element]/total_mass
+            atoms += 1
             
-        # reset the class object values
-        self._reset()
-        
-        return self.mw
+        return mw
     
     
     
 class Proteins():
     def __init__(self, verbose = False, printing = True):
         self.chem_mw = ChemMW(verbose = verbose, printing = printing)
-        self.verbose = verbose        
+        self.verbose = verbose
         self.printing = printing
         
         # load amino acid masses, which were previously calculated through ChemMW to expedite computational time
@@ -485,21 +485,21 @@ class Proteins():
                 fasta_link: str = None  # providing the link to a FASTA file as a string
                 ):       
         def calc_protein_mass(amino_acids):
-            self.raw_protein_mass = 0
+            raw_protein_mass = 0
             for amino_acid in amino_acids:
                 if not re.search('[A-Za-z]',amino_acid):
                     if amino_acid != '*':
                         print(f'--> ERROR: An unexpected character {amino_acid} was encountered in the protein sequence {amino_acids}.')
                     continue
                 mass = self.amino_acid_masses.get(amino_acid)
-                self.raw_protein_mass += mass
-                self.chem_mw._significant_digits(mass)
-            return sigfig.round(str(self.raw_protein_mass), self.chem_mw.sigfigs, warn = False)
+                raw_protein_mass += mass
+                sigs = _significant_digits(mass)
+            return sigfig.round(str(raw_protein_mass), sigs, warn=False)
                
         self.fasta = []
         if fasta_path is not None:
             with open(fasta_path) as input:
-                self.fasta_lines = input.readlines()   
+                self.fasta_lines = input.readlines()
         elif fasta_link is not None:
             sequence = requests.get(fasta_link).content
             self.fasta_lines = io.StringIO(sequence.decode('utf-8')).readlines()
@@ -522,34 +522,36 @@ class Proteins():
             if '' in self.fasta_protein_masses:
                 self.fasta_protein_masses.pop('')
         elif remainder == '' or remainder == '*':    
-            self.protein_mass = calc_protein_mass(protein_sequence)
+            protein_mass = calc_protein_mass(protein_sequence)
         elif re.search(r'(-)+(\*)?', remainder):
             amino_acids = protein_sequence.split('-')
-            self.protein_mass = calc_protein_mass(amino_acids)
+            protein_mass = calc_protein_mass(amino_acids)
             if self.printing:
-                string = ' - '.join(['>Protein', f'{len(amino_acids)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
+                string = ' - '.join(['>Protein', f'{len(amino_acids)}_residues', f'{protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
                 self.fasta.append(string)
             self.fasta = '\n'.join(self.fasta)
-            return self.protein_mass
+            return protein_mass
         else:
-            raise ImportError(f'The protein sequence {protein_sequence} has a remainder of {one_letter_remainder}, and does not follow the accepted conventions.')
+            raise ImportError(f'The protein sequence {protein_sequence} has a remainder of '
+                              f'{one_letter_remainder}, and does not follow the accepted conventions.')
             
         if fasta_path or fasta_link:
             if self.printing:
                 for protein in self.fasta_protein_masses:
-                    string = ' - '.join(['>Protein', f'{len(protein)}_residues', f'{self.fasta_protein_masses[protein]}_amu']) + f'\n{protein}'
+                    string = ' - '.join(['>Protein', f'{len(protein)}_residues',
+                                         f'{self.fasta_protein_masses[protein]}_amu']) + f'\n{protein}'
                     print(string)
                     self.fasta.append(string)
             self.fasta = '\n'.join(self.fasta)
-            return self.fasta_protein_masses                
+            return self.fasta_protein_masses
         else:
             if self.printing:
-                string = ' - '.join(['>Protein', f'{len(protein_sequence)}_residues', f'{self.protein_mass}_amu']) + f'\n{protein_sequence}'
+                string = ' - '.join(['>Protein', f'{len(protein_sequence)}_residues', f'{protein_mass}_amu']) + f'\n{protein_sequence}'
                 print(string)
-                self.fasta.append(string)    
+                self.fasta.append(string)
             self.fasta = '\n'.join(self.fasta)
-            return self.protein_mass
+            return protein_mass
         
 class PHREEQdb():
     def __init__(self, output_path = None, verbose = False, printing = False):
@@ -562,11 +564,11 @@ class PHREEQdb():
             self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
             while os.path.exists(self.output_path):
                 count += 1
-                self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')            
+                self.output_path = os.path.join(os.getcwd(), f'PHREEQdb-{count}')
         else:
             self.output_path = output_path
-        if not os.path.exists(self.output_path):
-            os.mkdir(self.output_path)
+        if not os.path.exists(output_path):
+            os.mkdir(output_path)
         
 
     def _database_parsing(self,):
@@ -636,13 +638,13 @@ class PHREEQdb():
         self.elements.columns = ['elements', 'species', 'alk', 'gfw_formula', 'element_gfw']
         
         if self.verbose:
-            print(self.elements)            
+            print(self.elements)
             print(self.minerals)
         
         
     def process(self,db_path):
         # load the database
-        self.db_name = re.search(r'([A-Za-z0-9_.]+(?=\.dat))', db_path).group()
+        db_name = re.search(r'([A-Za-z0-9_.]+(?=\.dat))', db_path).group()
         with open(db_path, 'r', encoding="utf8") as db:
             db = db.readlines()
             self.db = pandas.DataFrame(db)
@@ -670,8 +672,8 @@ class PHREEQdb():
             database_json['minerals'][phase]['mass'] = self.chem_mw.mass(formula)
 
         # export the JSON files
-        print(self.db_name, f': {len(minerals)} minerals')
-        with open(os.path.join(self.output_path, f'{self.db_name}.json'), 'w') as output:
-            json.dump(database_json, output, indent = 4)
+        print(db_name, f': {len(minerals)} minerals')
+        with open(os.path.join(self.output_path, f'{db_name}.json'), 'w') as output:
+            json.dump(database_json, output, indent=4)
             
         return minerals
